@@ -13,7 +13,8 @@
   "dependencies": {
     "react": "16.9.0",
     "react-native": "0.61.5",
-    "react-native-background-geofencing": "file:../"
+    "react-native-background-geofencing": "file:../",
+    "react-native-permissions": "^2.0.10"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
