@@ -18,6 +18,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
 
+import me.kiano.receivers.GeofenceBroadcastReceiver;
+
 public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
     private final ReactApplicationContext reactContext;
