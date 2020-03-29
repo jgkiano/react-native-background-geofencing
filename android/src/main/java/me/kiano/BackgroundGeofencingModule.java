@@ -2,6 +2,7 @@ package me.kiano;
 
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.util.Log;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -27,8 +28,6 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
     private GeofencingClient geofencingClient;
 
-    private ArrayList<Geofence> geofenceList = new ArrayList<Geofence>();
-
     private PendingIntent geofencePendingIntent;
 
     public BackgroundGeofencingModule(ReactApplicationContext reactContext) {
@@ -36,7 +35,7 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         geofencingClient = LocationServices.getGeofencingClient(getReactApplicationContext());
     }
 
-    private GeofencingRequest getGeofencingRequest(boolean setInitialTriggers, int setDwellTransitionType) {
+    private GeofencingRequest getGeofencingRequest(ArrayList<Geofence> geofenceList, boolean setInitialTriggers, int setDwellTransitionType) {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
         if (setInitialTriggers) {
             builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER | GeofencingRequest.INITIAL_TRIGGER_EXIT | setDwellTransitionType);
@@ -71,7 +70,7 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
             final ArrayList<Geofence> geofenceList = new ArrayList<Geofence>();
             final String id = geoFence.getString("id");
             final double lat = geoFence.getDouble("lat");
-            final double lon = geoFence.getDouble("lon");
+            final double lng = geoFence.getDouble("lng");
             final float radius = (float) geoFence.getDouble("radius");
             final long expiration = geoFence.getDouble("expiration") > 0 ? (long) geoFence.getDouble("expiration") : Geofence.NEVER_EXPIRE;
             final int notificationResponsiveness = geoFence.getInt("notificationResponsiveness");
@@ -84,7 +83,7 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
             final HashMap<String, Object> geofenceHashMap = new HashMap<String, Object>();
             geofenceHashMap.put("id", id);
             geofenceHashMap.put("lat", lat);
-            geofenceHashMap.put("lon", lon);
+            geofenceHashMap.put("lng", lng);
             geofenceHashMap.put("radius", radius);
             geofenceHashMap.put("expiration", expiration);
             geofenceHashMap.put("notificationResponsiveness", notificationResponsiveness);
@@ -96,7 +95,7 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
             Geofence geofence = new Geofence.Builder()
                     .setRequestId(id)
-                    .setCircularRegion(lat, lon, radius)
+                    .setCircularRegion(lat, lng, radius)
                     .setExpirationDuration(expiration)
                     .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT | setDwellTransitionType)
                     .setLoiteringDelay(loiteringDelay)
@@ -105,7 +104,7 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
             geofenceList.add(geofence);
 
-            geofencingClient.addGeofences(getGeofencingRequest(setInitialTriggers, setDwellTransitionType), getGeofencePendingIntent())
+            geofencingClient.addGeofences(getGeofencingRequest(geofenceList, setInitialTriggers, setDwellTransitionType), getGeofencePendingIntent())
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
