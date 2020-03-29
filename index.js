@@ -9,4 +9,21 @@ export const onGeofenceEvent = onGeofenceEventCallback => {
   }
 }
 
-export default BackgroundGeofencing;
+export default {
+  add(geofence = {}) {
+    const { id, lat, lng } = geofence;
+    const defaults = {
+      radius: 150,
+      expiration: -1,
+      notificationResponsiveness: 0,
+      loiteringDelay: 0,
+      setDwellTransitionType: false,
+      initialiseOnDeviceRestart: false,
+      setInitialTriggers: true,
+    };
+    if (!id || !lat || !lng) {
+      throw new Error("RN:BackgroundGeofencing:", "Must provide atlease a valid id, lat and lng");
+    }
+    return BackgroundGeofencing.add({ ...defaults, ...geofence});
+  }
+}
