@@ -41,12 +41,11 @@ class App extends React.Component {
       const addResult = await BackgroundGeofencing.add({
         id: 'kianoshome',
         lat: -1.314683,
-        lon: 36.836333,
+        lng: 36.836333,
         radius: 300,
+        initialiseOnDeviceRestart: true,
       });
-      const startResult = await BackgroundGeofencing.start();
       console.log(addResult, 'addResult');
-      console.log(startResult, 'startResult');
     } catch (error) {
       console.log(error);
     }
