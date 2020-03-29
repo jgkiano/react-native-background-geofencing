@@ -1,4 +1,4 @@
-package me.kiano;
+package me.kiano.services;
 
 import android.content.Intent;
 import android.os.Bundle;

@@ -1,4 +1,4 @@
-package me.kiano;
+package me.kiano.receivers;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
