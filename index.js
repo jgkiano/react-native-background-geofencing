@@ -27,7 +27,7 @@ export default {
     try {
       if (!id || !lat || !lng) {
         throw new Error(
-          'RN:BackgroundGeofencing: Must provide atlease a valid id, lat and lng',
+          'RN:BackgroundGeofencing: Must provide at least a valid id, lat and lng',
         );
       }
       return await BackgroundGeofencing.add({...defaults, ...geofence});
