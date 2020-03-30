@@ -73,7 +73,8 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     api "com.facebook.react:react-native:+"  // From node_modules
-    api "com.orhanobut:hawk:2.0.1"
+    api 'com.snappydb:snappydb-lib:0.5.2'
+    api 'com.esotericsoftware.kryo:kryo:2.24.0'
     implementation 'com.google.android.gms:play-services-location:17.0.0'
 }
 
