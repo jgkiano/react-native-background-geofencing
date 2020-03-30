@@ -2,14 +2,11 @@ package me.kiano;
 
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.util.Log;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
@@ -19,10 +16,10 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import me.kiano.database.GeofenceDB;
 import me.kiano.receivers.GeofenceBroadcastReceiver;
+import me.kiano.models.RNGeofence;
 
 public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
@@ -35,10 +32,10 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         geofencingClient = LocationServices.getGeofencingClient(getReactApplicationContext());
     }
 
-    private GeofencingRequest getGeofencingRequest(ArrayList<Geofence> geofenceList, boolean setInitialTriggers, int setDwellTransitionType) {
+    private GeofencingRequest getGeofencingRequest(ArrayList<Geofence> geofenceList, boolean setInitialTriggers, int dwellTransitionType) {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
         if (setInitialTriggers) {
-            builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER | GeofencingRequest.INITIAL_TRIGGER_EXIT | setDwellTransitionType);
+            builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER | GeofencingRequest.INITIAL_TRIGGER_EXIT | dwellTransitionType);
         }
         builder.addGeofences(geofenceList);
         return builder.build();
@@ -53,10 +50,10 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         return geofencePendingIntent;
     }
 
-    private void saveToDB(HashMap<String, Object> geofence, Promise promise) {
+    private void saveToDB(RNGeofence rnGeofence, Promise promise) {
         GeofenceDB db = new GeofenceDB(getReactApplicationContext());
-        db.saveGeofence(geofence);
-        promise.resolve(geofence.get("id"));
+        db.saveGeofence(rnGeofence);
+        promise.resolve(rnGeofence.id);
     }
 
     @Override
@@ -68,50 +65,27 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     public void add(ReadableMap geoFence, final Promise promise) {
         try {
             final ArrayList<Geofence> geofenceList = new ArrayList<Geofence>();
-            final String id = geoFence.getString("id");
-            final double lat = geoFence.getDouble("lat");
-            final double lng = geoFence.getDouble("lng");
-            final float radius = (float) geoFence.getDouble("radius");
-            final long expiration = geoFence.getDouble("expiration") > 0 ? (long) geoFence.getDouble("expiration") : Geofence.NEVER_EXPIRE;
-            final int notificationResponsiveness = geoFence.getInt("notificationResponsiveness");
-            final int loiteringDelay = geoFence.getInt("loiteringDelay");
-            final int setDwellTransitionType = geoFence.getBoolean("setDwellTransitionType") ? Geofence.GEOFENCE_TRANSITION_DWELL : 0;
-            final long expirationDate = System.currentTimeMillis() + expiration;
-            final boolean initialiseOnDeviceRestart = geoFence.getBoolean("initialiseOnDeviceRestart");
-            final boolean setInitialTriggers = geoFence.getBoolean("setInitialTriggers");
-
-            final HashMap<String, Object> geofenceHashMap = new HashMap<String, Object>();
-            geofenceHashMap.put("id", id);
-            geofenceHashMap.put("lat", lat);
-            geofenceHashMap.put("lng", lng);
-            geofenceHashMap.put("radius", radius);
-            geofenceHashMap.put("expiration", expiration);
-            geofenceHashMap.put("notificationResponsiveness", notificationResponsiveness);
-            geofenceHashMap.put("loiteringDelay", loiteringDelay);
-            geofenceHashMap.put("setDwellTransitionType", setDwellTransitionType);
-            geofenceHashMap.put("expirationDate", expirationDate);
-            geofenceHashMap.put("initialiseOnDeviceRestart", initialiseOnDeviceRestart);
-            geofenceHashMap.put("setInitialTriggers", setInitialTriggers);
+            final RNGeofence rnGeofence = new RNGeofence(geoFence);
 
             Geofence geofence = new Geofence.Builder()
-                    .setRequestId(id)
-                    .setCircularRegion(lat, lng, radius)
-                    .setExpirationDuration(expiration)
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT | setDwellTransitionType)
-                    .setLoiteringDelay(loiteringDelay)
-                    .setNotificationResponsiveness(notificationResponsiveness)
+                    .setRequestId(rnGeofence.id)
+                    .setCircularRegion(rnGeofence.lat, rnGeofence.lng, rnGeofence.radius)
+                    .setExpirationDuration(rnGeofence.expiration)
+                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT | rnGeofence.dwellTransitionType)
+                    .setLoiteringDelay(rnGeofence.loiteringDelay)
+                    .setNotificationResponsiveness(rnGeofence.notificationResponsiveness)
                     .build();
 
             geofenceList.add(geofence);
 
-            geofencingClient.addGeofences(getGeofencingRequest(geofenceList, setInitialTriggers, setDwellTransitionType), getGeofencePendingIntent())
+            geofencingClient.addGeofences(getGeofencingRequest(geofenceList, rnGeofence.setInitialTriggers, rnGeofence.dwellTransitionType), getGeofencePendingIntent())
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            if (initialiseOnDeviceRestart) {
-                                saveToDB(geofenceHashMap, promise);
+                            if (rnGeofence.initialiseOnDeviceRestart) {
+                                saveToDB(rnGeofence, promise);
                             } else {
-                                promise.resolve(id);
+                                promise.resolve(rnGeofence.id);
                             }
                         }
                     })

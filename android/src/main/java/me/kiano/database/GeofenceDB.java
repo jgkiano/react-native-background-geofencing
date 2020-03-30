@@ -3,35 +3,30 @@ package me.kiano.database;
 import android.content.Context;
 import android.util.Log;
 
-import com.orhanobut.hawk.Hawk;
+import com.snappydb.DB;
+import com.snappydb.DBFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import me.kiano.models.RNGeofence;
 
 public class GeofenceDB {
+    private final Context context;
+
     public GeofenceDB(Context context) {
-        Hawk.init(context).build();
+        this.context = context;
     }
 
-    private String STORAGE_KEY = "@savedGeofences";
+    private String DB_NAME = "RNBackgroundGeofencingDB";
 
-    private String TAG = "GeofenceDB";
+    private String TAG = "RNGeofenceDB";
 
-    public void saveGeofence (HashMap<String, Object> geofence) {
+    private String KEY_PREFIX = "RNGeofenceDB:v1:";
+
+    public void saveGeofence (RNGeofence rnGeofence) {
         try {
-            ArrayList<HashMap<String, Object>> savedGeofences = new ArrayList<>();
-            savedGeofences = Hawk.get(STORAGE_KEY, savedGeofences);
-            Iterator<HashMap<String, Object>> iterator = savedGeofences.iterator();
-            while (iterator.hasNext()) {
-                HashMap<String, Object> savedGeofence = iterator.next();
-                if (savedGeofence.get("id") == geofence.get("id")) {
-                    savedGeofences.remove(savedGeofence);
-                }
-            }
-            savedGeofences.add(geofence);
-            Hawk.put(STORAGE_KEY, savedGeofences);
-            Log.v(TAG, "Successfully saved geofence to DB!");
+            DB db = DBFactory.open(context, DB_NAME);
+            db.put(KEY_PREFIX + rnGeofence.id, rnGeofence);
+            db.close();
+            Log.v(TAG, "Geofence successfully saved to DB: " + rnGeofence);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
