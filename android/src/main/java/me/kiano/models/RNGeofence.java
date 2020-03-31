@@ -3,6 +3,7 @@ package me.kiano.models;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReadableMap;
@@ -13,7 +14,12 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import me.kiano.database.GeofenceDB;
 import me.kiano.interfaces.RNGeofenceHandler;
@@ -33,8 +39,24 @@ public class RNGeofence {
     public final boolean setInitialTriggers;
     private final Context context;
     private final ArrayList<Geofence> geofenceList = new ArrayList<>();
-    private final GeofencingClient geofencingClient;
+    private GeofencingClient geofencingClient;
     private PendingIntent geofencePendingIntent;
+
+    public RNGeofence (Context context, JSONObject geoFence) throws JSONException {
+        this.context = context;
+        id = geoFence.getString("id");
+        lat = geoFence.getDouble("lat");
+        lng = geoFence.getDouble("lng");
+        radius = (float) geoFence.getDouble("radius");
+        expiration = geoFence.getLong("expiration");
+        expirationDate = geoFence.getLong("expirationDate");
+        notificationResponsiveness = geoFence.getInt("notificationResponsiveness");
+        loiteringDelay = geoFence.getInt("loiteringDelay");
+        dwellTransitionType = geoFence.getInt("dwellTransitionType");
+        initialiseOnDeviceRestart = geoFence.getBoolean("initialiseOnDeviceRestart");
+        setInitialTriggers = geoFence.getBoolean("setInitialTriggers");
+        setUpRNGeofence();
+    }
 
     public RNGeofence(Context context, ReadableMap geoFence) {
         this.context = context;
@@ -46,11 +68,14 @@ public class RNGeofence {
         notificationResponsiveness = geoFence.getInt("notificationResponsiveness");
         loiteringDelay = geoFence.getInt("loiteringDelay");
         dwellTransitionType = geoFence.getBoolean("setDwellTransitionType") ? Geofence.GEOFENCE_TRANSITION_DWELL : 0;
-        expirationDate = System.currentTimeMillis() + expiration;
+        expirationDate = expiration > Geofence.NEVER_EXPIRE ? System.currentTimeMillis() + expiration : Geofence.NEVER_EXPIRE;
         initialiseOnDeviceRestart = geoFence.getBoolean("initialiseOnDeviceRestart");
         setInitialTriggers = geoFence.getBoolean("setInitialTriggers");
         geofencingClient = LocationServices.getGeofencingClient(context);
+        setUpRNGeofence();
+    }
 
+    private void setUpRNGeofence() {
         Geofence geofence = new Geofence.Builder()
                 .setRequestId(id)
                 .setCircularRegion(lat, lng, radius)
@@ -59,7 +84,6 @@ public class RNGeofence {
                 .setLoiteringDelay(loiteringDelay)
                 .setNotificationResponsiveness(notificationResponsiveness)
                 .build();
-
         geofenceList.add(geofence);
     }
 
@@ -105,5 +129,22 @@ public class RNGeofence {
         } catch (Exception e) {
             handler.onError(id, e);
         }
+    }
+
+    public String toJSON() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("id", id);
+        json.put("lat", lat);
+        json.put("lng", lng);
+        json.put("radius", radius);
+        json.put("expiration", expiration);
+        json.put("expirationDate", expirationDate);
+        json.put("notificationResponsiveness", notificationResponsiveness);
+        json.put("loiteringDelay", loiteringDelay);
+        json.put("dwellTransitionType", dwellTransitionType);
+        json.put("initialiseOnDeviceRestart", initialiseOnDeviceRestart);
+        json.put("setInitialTriggers", setInitialTriggers);
+        Log.v( "RNGeofenceJSON",json.toString(2));
+        return json.toString();
     }
 }
