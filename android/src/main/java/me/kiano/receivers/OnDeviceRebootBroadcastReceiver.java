@@ -8,6 +8,8 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
+import me.kiano.services.ReinitialiseGeofencesJobIntentService;
+
 public class OnDeviceRebootBroadcastReceiver extends BroadcastReceiver {
     public static final String TAG = "RNBackgroundGeofencing";
     @Override
@@ -19,5 +21,6 @@ public class OnDeviceRebootBroadcastReceiver extends BroadcastReceiver {
                 Toast.makeText(context, "We see you've restarted your device -_-", Toast.LENGTH_LONG).show();
             }
         });
+        ReinitialiseGeofencesJobIntentService.enqueueWork(context, intent);
     }
 }
