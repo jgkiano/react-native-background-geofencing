@@ -26,10 +26,9 @@ public class GeofenceDB {
     public void saveGeofence (RNGeofence rnGeofence) {
         try {
             DB db = DBFactory.open(context, DB_NAME);
-            db.put(KEY_PREFIX + rnGeofence.id, rnGeofence);
+            db.put(KEY_PREFIX + rnGeofence.id, rnGeofence.toJSON());
             db.close();
             Log.v(TAG, "Geofence successfully saved to DB: " + rnGeofence.id);
-            getAllGeofences();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
@@ -40,13 +39,12 @@ public class GeofenceDB {
         try {
             DB db = DBFactory.open(context, DB_NAME);
             String[] geofences = db.findKeys(KEY_PREFIX);
-            if (geofences.length > 0) {
-                for (int i = 0; i < geofences.length; i++) {
-                    RNGeofence savedGeofence = db.getObject(geofences[i], RNGeofence.class);
-                    Log.v(TAG, "Found fence with id: " + savedGeofence.id);
-                    savedGeofences.add(savedGeofence);
-                }
+            for (String key: geofences) {
+                Log.v(TAG, "Found fence with id: " + key);
+                String savedGeofenceJSON = db.get(key);
+                Log.v(TAG, "Saved geofence: " + savedGeofenceJSON);
             }
+            db.close();
             return savedGeofences;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
