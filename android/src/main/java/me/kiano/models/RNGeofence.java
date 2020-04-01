@@ -41,6 +41,7 @@ public class RNGeofence {
     private final ArrayList<Geofence> geofenceList = new ArrayList<>();
     private GeofencingClient geofencingClient;
     private PendingIntent geofencePendingIntent;
+    private final String TAG = "RNGeofence";
 
     public RNGeofence (Context context, JSONObject geoFence) throws JSONException {
         this.context = context;
@@ -116,6 +117,7 @@ public class RNGeofence {
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
+                            Log.v(TAG, "Geofence successfully added :)");
                             if(save) { saveToDB(); }
                             handler.onSuccess(id);
                         }
@@ -123,6 +125,7 @@ public class RNGeofence {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(Exception e) {
+                            Log.v(TAG, "Geofence add failed :(");
                             handler.onError(id, e);
                         }
                     });
