@@ -76,6 +76,13 @@ public class RNGeofence {
         setUpRNGeofence();
     }
 
+    public boolean isExpired () {
+        if (System.currentTimeMillis() > expirationDate) {
+            return true;
+        }
+        return false;
+    }
+
     private void setUpRNGeofence() {
         Geofence geofence = new Geofence.Builder()
                 .setRequestId(id)
