@@ -6,6 +6,8 @@ import android.util.Log;
 import com.snappydb.DB;
 import com.snappydb.DBFactory;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import me.kiano.models.RNGeofence;
@@ -29,6 +31,7 @@ public class GeofenceDB {
             db.put(KEY_PREFIX + rnGeofence.id, rnGeofence.toJSON());
             db.close();
             Log.v(TAG, "Geofence successfully saved to DB: " + rnGeofence.id);
+            getAllGeofences();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
@@ -40,15 +43,31 @@ public class GeofenceDB {
             DB db = DBFactory.open(context, DB_NAME);
             String[] geofences = db.findKeys(KEY_PREFIX);
             for (String key: geofences) {
-                Log.v(TAG, "Found fence with id: " + key);
                 String savedGeofenceJSON = db.get(key);
-                Log.v(TAG, "Saved geofence: " + savedGeofenceJSON);
+                RNGeofence rnGeofence = new RNGeofence(context, new JSONObject(savedGeofenceJSON));
+                if (rnGeofence.isExpired()) {
+                    remove(rnGeofence.id);
+                } else {
+                    savedGeofences.add(rnGeofence);
+                }
             }
             db.close();
             return savedGeofences;
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
             return savedGeofences;
+        }
+    }
+
+    public String remove(String geofenceId) {
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            db.del(KEY_PREFIX + geofenceId);
+            Log.v(TAG, "Geofence removed from DB: " + geofenceId);
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        } finally {
+            return geofenceId;
         }
     }
 }
