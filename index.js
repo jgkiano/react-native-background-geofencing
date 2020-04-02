@@ -3,12 +3,33 @@ import {AppRegistry} from 'react-native';
 
 const {BackgroundGeofencing} = NativeModules;
 
-export const onGeofenceEvent = onGeofenceEventCallback => {
-  if (typeof onGeofenceEventCallback === 'function') {
-    AppRegistry.registerHeadlessTask(
-      'OnGeoFenceEventJavaScript',
-      () => onGeofenceEventCallback,
-    );
+const defaultWebhookConfiguration = {
+  url: null,
+  headers: null,
+  timeout: 15000,
+  exclude: [],
+};
+
+export const configure = (configuration = {}) => {
+  const {jsTask} = configuration;
+  let {webhook} = configuration;
+  if (jsTask && typeof jsTask !== 'function') {
+    throw new Error('invalid jsTask function provided');
+  }
+  if (webhook && typeof webhook !== 'object') {
+    throw new Error('invalid webhook configuration provided');
+  }
+  if (webhook && typeof webhook.url !== 'string') {
+    throw new Error('invalid webhook configuration provided');
+  }
+  if (jsTask) {
+    AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => jsTask);
+  }
+  if (webhook) {
+    BackgroundGeofencing.configureWebhook({
+      ...defaultWebhookConfiguration,
+      ...webhook,
+    });
   }
 };
 
@@ -21,7 +42,7 @@ export default {
       notificationResponsiveness: 0,
       loiteringDelay: 0,
       setDwellTransitionType: false,
-      initialiseOnDeviceRestart: false,
+      registerOnDeviceRestart: false,
       setInitialTriggers: true,
     };
     try {
