@@ -1,18 +1,12 @@
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View, Button} from 'react-native';
-import BackgroundGeofencing, {
-  onGeofenceEvent,
-} from 'react-native-background-geofencing';
+import BackgroundGeofencing from 'react-native-background-geofencing';
 import {request, check, PERMISSIONS} from 'react-native-permissions';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.askPermissions();
-    onGeofenceEvent(async ({EVENT_NAME, EVENT_DATA}) => {
-      console.log('EVENT_NAME: ', EVENT_NAME);
-      console.log(EVENT_DATA);
-    });
   }
 
   askPermissions = async () => {
