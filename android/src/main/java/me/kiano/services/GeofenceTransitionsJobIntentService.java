@@ -1,6 +1,5 @@
 package me.kiano.services;
 
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -14,13 +13,16 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
+import androidx.work.Constraints;
+import androidx.work.Data;
+import androidx.work.NetworkType;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.facebook.react.HeadlessJsTaskService;
-import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.GeofenceStatusCodes;
 import com.google.android.gms.location.GeofencingEvent;
 
-import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import me.kiano.models.RNGeofenceData;
 
@@ -46,6 +48,25 @@ public class GeofenceTransitionsJobIntentService extends JobIntentService {
         getApplicationContext().startService(service);
         HeadlessJsTaskService.acquireWakeLockNow(getApplicationContext());
         sendNotification(rnGeofenceData.getEventName());
+
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        Data rnGeofenceWorkData = new Data.Builder()
+                .putString("EVENT_NAME", rnGeofenceData.getEventName())
+                .putString("EVENT_DATA", rnGeofenceData.getEventData())
+                .build();
+
+        OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(GeofenceWebhookWorker.class)
+                .setConstraints(constraints)
+                .setInputData(rnGeofenceWorkData)
+                .addTag("RNGeofenceWork")
+                .setInitialDelay(1, TimeUnit.MINUTES)
+                .build();
+
+        WorkManager.getInstance(getApplicationContext()).enqueue(uploadWorkRequest);
+
 //        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O || isAppOnForeground(getApplicationContext())) {
 //            getApplicationContext().startService(service);
 //        } else {
