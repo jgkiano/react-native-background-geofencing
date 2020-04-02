@@ -9,8 +9,9 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.askPermissions();
-    onGeofenceEvent(async data => {
-      console.log('We have been called from the CLIENT wooooooppppp!', data);
+    onGeofenceEvent(async ({EVENT_NAME, EVENT_DATA}) => {
+      console.log('EVENT_NAME: ', EVENT_NAME);
+      console.log(EVENT_DATA);
     });
   }
 
