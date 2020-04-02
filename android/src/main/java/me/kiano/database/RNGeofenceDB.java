@@ -11,11 +11,12 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import me.kiano.models.RNGeofence;
+import me.kiano.models.RNGeofenceWebhookConfiguration;
 
-public class GeofenceDB {
+public class RNGeofenceDB {
     private final Context context;
 
-    public GeofenceDB(Context context) {
+    public RNGeofenceDB(Context context) {
         this.context = context;
     }
 
@@ -23,12 +24,14 @@ public class GeofenceDB {
 
     private String TAG = "RNGeofenceDB";
 
-    private String KEY_PREFIX = "RNGeofenceDB:v1:";
+    private String GEOFENCE_KEY_PREFIX = "RNGeofenceDB:v1:";
+
+    private String WEBHOOK_CONFIG_KEY = "RNWebhookDB:v1:configuration";
 
     public void saveGeofence (RNGeofence rnGeofence) {
         try {
             DB db = DBFactory.open(context, DB_NAME);
-            db.put(KEY_PREFIX + rnGeofence.id, rnGeofence.toJSON());
+            db.put(GEOFENCE_KEY_PREFIX + rnGeofence.id, rnGeofence.toJSON());
             db.close();
             Log.v(TAG, "Geofence successfully saved to DB: " + rnGeofence.id);
             getAllGeofences();
@@ -41,12 +44,12 @@ public class GeofenceDB {
         ArrayList<RNGeofence> savedGeofences = new ArrayList<>();
         try {
             DB db = DBFactory.open(context, DB_NAME);
-            String[] geofences = db.findKeys(KEY_PREFIX);
+            String[] geofences = db.findKeys(GEOFENCE_KEY_PREFIX);
             for (String key: geofences) {
                 String savedGeofenceJSON = db.get(key);
                 RNGeofence rnGeofence = new RNGeofence(context, new JSONObject(savedGeofenceJSON));
                 if (rnGeofence.isExpired()) {
-                    remove(rnGeofence.id);
+                    removeGeofence(rnGeofence.id);
                 } else {
                     savedGeofences.add(rnGeofence);
                 }
@@ -59,15 +62,27 @@ public class GeofenceDB {
         }
     }
 
-    public String remove(String geofenceId) {
+    public String removeGeofence(String geofenceId) {
         try {
             DB db = DBFactory.open(context, DB_NAME);
-            db.del(KEY_PREFIX + geofenceId);
+            db.del(GEOFENCE_KEY_PREFIX + geofenceId);
             Log.v(TAG, "Geofence removed from DB: " + geofenceId);
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         } finally {
             return geofenceId;
+        }
+    }
+
+    public void saveWebhookConfiguration(RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration) {
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            db.put(WEBHOOK_CONFIG_KEY, rnGeofenceWebhookConfiguration.toJSON());
+            RNGeofenceWebhookConfiguration stored = new RNGeofenceWebhookConfiguration(new JSONObject(db.get(WEBHOOK_CONFIG_KEY)));
+            db.close();
+            Log.v(TAG, "Geofence Webhook successfully saved to DB: " + rnGeofenceWebhookConfiguration.toJSON() + " stored: " + stored.getUrl());
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
         }
     }
 }
