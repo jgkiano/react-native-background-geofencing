@@ -72,18 +72,18 @@ public class RNGeofence {
         expirationDate = expiration > Geofence.NEVER_EXPIRE ? System.currentTimeMillis() + expiration : Geofence.NEVER_EXPIRE;
         initialiseOnDeviceRestart = geoFence.getBoolean("initialiseOnDeviceRestart");
         setInitialTriggers = geoFence.getBoolean("setInitialTriggers");
-        geofencingClient = LocationServices.getGeofencingClient(context);
         setUpRNGeofence();
     }
 
     public boolean isExpired () {
-        if (System.currentTimeMillis() > expirationDate) {
+        if (expirationDate > 0 && System.currentTimeMillis() > expirationDate) {
             return true;
         }
         return false;
     }
 
     private void setUpRNGeofence() {
+        geofencingClient = LocationServices.getGeofencingClient(context);
         Geofence geofence = new Geofence.Builder()
                 .setRequestId(id)
                 .setCircularRegion(lat, lng, radius)
