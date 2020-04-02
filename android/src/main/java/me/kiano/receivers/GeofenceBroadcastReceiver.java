@@ -5,8 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.facebook.react.HeadlessJsTaskService;
-
 import me.kiano.services.GeofenceTransitionsJobIntentService;
 
 public class GeofenceBroadcastReceiver extends BroadcastReceiver {
