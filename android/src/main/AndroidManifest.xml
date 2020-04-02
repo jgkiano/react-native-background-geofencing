@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application>
 
@@ -23,12 +24,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
-
-        <service
-            android:name=".services.ReinitialiseGeofencesJobIntentService"
-            android:exported="true"
-            android:enabled="true"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <service
         android:name=".services.GeofenceTransitionsJobIntentService"
