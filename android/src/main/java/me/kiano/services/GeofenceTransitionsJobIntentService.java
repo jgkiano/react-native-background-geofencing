@@ -1,5 +1,6 @@
 package me.kiano.services;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -14,9 +15,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 
+import com.facebook.react.HeadlessJsTaskService;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofenceStatusCodes;
 import com.google.android.gms.location.GeofencingEvent;
+
+import java.util.List;
+
+import me.kiano.models.RNGeofenceData;
 
 public class GeofenceTransitionsJobIntentService extends JobIntentService {
 
@@ -31,29 +37,20 @@ public class GeofenceTransitionsJobIntentService extends JobIntentService {
     protected void onHandleWork(@NonNull Intent intent) {
         Log.v(TAG, "GeofenceTransitionsJobIntentService work started");
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
-        if (geofencingEvent.hasError()) {
-            String errorMessage = GeofenceStatusCodes.getStatusCodeString(geofencingEvent.getErrorCode());
-            Log.e(TAG, errorMessage);
-            return;
-        }
-        // Get the transition type.
-        int geofenceTransition = geofencingEvent.getGeofenceTransition();
-
-        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER) {
-            Log.v(TAG, "Welcome home sensei!");
-            sendNotification("Welcome home sensei!");
-        }
-
-        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
-            Log.v(TAG, "Goodbye sensei!");
-            sendNotification("Goodbye sensei!");
-        }
-
+        RNGeofenceData rnGeofenceData = new RNGeofenceData(geofencingEvent);
         Intent service = new Intent(getApplicationContext(), OnGeoFenceEventJavaScriptTaskService.class);
         Bundle bundle = new Bundle();
-        bundle.putString("foo", "bar");
+        bundle.putString("EVENT_NAME", rnGeofenceData.getEventName());
+        bundle.putString("EVENT_DATA", rnGeofenceData.getEventData());
         service.putExtras(bundle);
         getApplicationContext().startService(service);
+        HeadlessJsTaskService.acquireWakeLockNow(getApplicationContext());
+        sendNotification(rnGeofenceData.getEventName());
+//        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O || isAppOnForeground(getApplicationContext())) {
+//            getApplicationContext().startService(service);
+//        } else {
+//            getApplicationContext().startForegroundService(service);
+//        }
     }
 
     private void sendNotification (final String message) {
