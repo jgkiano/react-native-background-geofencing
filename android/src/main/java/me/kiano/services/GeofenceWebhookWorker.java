@@ -7,6 +7,14 @@ import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+
+import me.kiano.database.RNGeofenceDB;
+import me.kiano.models.RNGeofenceWebhookConfiguration;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -15,34 +23,54 @@ import okhttp3.Response;
 
 public class GeofenceWebhookWorker extends Worker {
 
-    private final OkHttpClient httpClient = new OkHttpClient();
+    private OkHttpClient httpClient;
 
     private String TAG = "GeofenceUploadWorker";
 
+    private RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration;
+
     public GeofenceWebhookWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
+        try {
+            RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(getApplicationContext());
+            rnGeofenceWebhookConfiguration = rnGeofenceDB.getWebhookConfiguration();
+            httpClient = new OkHttpClient.Builder()
+                    .connectTimeout(rnGeofenceWebhookConfiguration.getTimeout(), TimeUnit.MILLISECONDS)
+                    .writeTimeout(rnGeofenceWebhookConfiguration.getTimeout(), TimeUnit.MILLISECONDS)
+                    .readTimeout(rnGeofenceWebhookConfiguration.getTimeout(), TimeUnit.MILLISECONDS)
+                    .build();
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     @Override
     public Result doWork() {
-        Log.v(TAG, "Doing some nice work");
-        String EVENT_NAME = getInputData().getString("EVENT_NAME");
-        String EVENT_DATA = getInputData().getString("EVENT_DATA");
-        Log.v(TAG, "EVENT NAME: " + EVENT_NAME);
-        Log.v(TAG, EVENT_DATA);
-
-        RequestBody body = RequestBody.create(
-                MediaType.parse("application/json"),
-                EVENT_DATA
-        );
-
-        Request request = new Request.Builder()
-                .url("http://192.168.100.190:4000/geofence")
-                .addHeader("Kiano", "Man")
-                .post(body)
-                .build();
-
+        if (httpClient == null || rnGeofenceWebhookConfiguration == null) {
+            Log.v(TAG, "Failed some nice work");
+            return Result.success();
+        }
         try {
+            Log.v(TAG, "Doing some nice work");
+            String event = getInputData().getString("event");
+            String data = getInputData().getString("data");
+            Log.v(TAG, "EVENT NAME: " + event);
+            Log.v(TAG, data);
+            ArrayList<Object> excludes = rnGeofenceWebhookConfiguration.getExclude();
+            JSONObject jsonData = new JSONObject(data);
+            Iterator iterator = excludes.iterator();
+            while (iterator.hasNext()) {
+                String item = (String) iterator.next();
+                if (jsonData.has(item)) {
+                    jsonData.remove(item);
+                }
+            }
+            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), jsonData.toString());
+            Request request = new Request.Builder()
+                    .url(rnGeofenceWebhookConfiguration.getUrl())
+                    .headers(rnGeofenceWebhookConfiguration.getHeaders())
+                    .post(requestBody)
+                    .build();
             Response response = httpClient.newCall(request).execute();
             if (response.isSuccessful()) {
                 Log.e(TAG, "Request successfully sent status code: " + response.code());
@@ -54,6 +82,5 @@ public class GeofenceWebhookWorker extends Worker {
         } finally {
             return Result.success();
         }
-
     }
 }
