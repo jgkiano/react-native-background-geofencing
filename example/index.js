@@ -8,10 +8,10 @@ import {name as appName} from './app.json';
 import {configure} from 'react-native-background-geofencing';
 
 configure({
-  jsTask: ({EVENT_NAME, EVENT_DATA}) => {
+  jsTask: async ({event, data}) => {
     console.log('---CLIENT---');
-    console.log(EVENT_NAME);
-    console.log(EVENT_DATA);
+    console.log(event);
+    console.log(data);
     console.log('------------');
   },
   webhook: {
