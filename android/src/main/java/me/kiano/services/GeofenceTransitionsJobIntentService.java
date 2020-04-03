@@ -24,6 +24,7 @@ import com.google.android.gms.location.GeofencingEvent;
 
 import java.util.concurrent.TimeUnit;
 
+import me.kiano.database.RNGeofenceDB;
 import me.kiano.models.RNGeofenceData;
 
 public class GeofenceTransitionsJobIntentService extends JobIntentService {
@@ -42,20 +43,25 @@ public class GeofenceTransitionsJobIntentService extends JobIntentService {
         RNGeofenceData rnGeofenceData = new RNGeofenceData(geofencingEvent);
         Intent service = new Intent(getApplicationContext(), OnGeoFenceEventJavaScriptTaskService.class);
         Bundle bundle = new Bundle();
-        bundle.putString("EVENT_NAME", rnGeofenceData.getEventName());
-        bundle.putString("EVENT_DATA", rnGeofenceData.getEventData());
+        RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(getApplicationContext());
+        bundle.putString("event", rnGeofenceData.getEventName());
+        bundle.putString("data", rnGeofenceData.getEventData());
         service.putExtras(bundle);
         getApplicationContext().startService(service);
         HeadlessJsTaskService.acquireWakeLockNow(getApplicationContext());
         sendNotification(rnGeofenceData.getEventName());
+
+        if (!rnGeofenceDB.hasWebhookConfiguration()) {
+            return;
+        }
 
         Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .build();
 
         Data rnGeofenceWorkData = new Data.Builder()
-                .putString("EVENT_NAME", rnGeofenceData.getEventName())
-                .putString("EVENT_DATA", rnGeofenceData.getEventData())
+                .putString("event", rnGeofenceData.getEventName())
+                .putString("data", rnGeofenceData.getEventData())
                 .build();
 
         OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(GeofenceWebhookWorker.class)
