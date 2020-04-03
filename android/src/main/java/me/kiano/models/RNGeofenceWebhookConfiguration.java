@@ -21,17 +21,18 @@ public class RNGeofenceWebhookConfiguration {
     private long timeout;
     private ArrayList<Object> exclude;
     private HashMap<String, Object> headersHashMap;
+    private long DEFAULT_TIMEOUT = 15000;
 
     public RNGeofenceWebhookConfiguration(ReadableMap configuration) {
         url = configuration.hasKey("url") ? configuration.getString("url") : null;
         headersHashMap = configuration.hasKey("headers") ? configuration.getMap("headers").toHashMap() : new HashMap<String, Object>();
-        timeout = configuration.hasKey("timeout") ? configuration.getInt("timeout") : 15000;
+        timeout = configuration.hasKey("timeout") ? configuration.getInt("timeout") : DEFAULT_TIMEOUT;
         exclude = configuration.hasKey("exclude") ? configuration.getArray("exclude").toArrayList() : new ArrayList<>();
     }
 
     public RNGeofenceWebhookConfiguration (JSONObject configuration) throws JSONException {
         url = configuration.has("url") ? configuration.getString("url") : null;
-        timeout = configuration.has("timeout") ? configuration.getLong("timeout") : 15000;
+        timeout = configuration.has("timeout") ? configuration.getLong("timeout") : DEFAULT_TIMEOUT;
         headersHashMap = new HashMap<>();
         exclude = new ArrayList<Object>();
         JSONArray excludeJSONArray = configuration.has("exclude") ? configuration.getJSONArray("exclude") : new JSONArray();
