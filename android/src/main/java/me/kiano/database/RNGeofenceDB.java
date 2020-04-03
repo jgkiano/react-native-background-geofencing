@@ -5,7 +5,9 @@ import android.util.Log;
 
 import com.snappydb.DB;
 import com.snappydb.DBFactory;
+import com.snappydb.SnappydbException;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -83,6 +85,26 @@ public class RNGeofenceDB {
             Log.v(TAG, "Geofence Webhook successfully saved to DB: " + rnGeofenceWebhookConfiguration.toJSON() + " stored: " + stored.getUrl());
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
+        }
+    }
+
+    public RNGeofenceWebhookConfiguration getWebhookConfiguration () throws JSONException, SnappydbException {
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration = new RNGeofenceWebhookConfiguration(new JSONObject(db.get(WEBHOOK_CONFIG_KEY)));
+            db.close();
+            return rnGeofenceWebhookConfiguration;
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+    public boolean hasWebhookConfiguration() {
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            return db.exists(WEBHOOK_CONFIG_KEY);
+        } catch (Exception e) {
+            return false;
         }
     }
 }
