@@ -51,7 +51,7 @@ public class RNGeofenceData {
         }
     }
 
-    private String generateErrorMessage (String errorMessage) {
+    private String generateErrorMessage(String errorMessage) {
         try {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("geofenceIds", new JSONArray(geofenceIds));
