@@ -46,12 +46,19 @@ class App extends React.Component {
     }
   };
 
+  removeGeofence = async () => {
+    BackgroundGeofencing.remove('kianoshome');
+  };
+
   render() {
     return (
       <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
         <Text>Welcome to geofencing</Text>
         <View style={{marginTop: 15}}>
           <Button title="Start Geofence" onPress={this.startGeofence} />
+        </View>
+        <View style={{marginTop: 15}}>
+          <Button title="Remove Geofence" onPress={this.removeGeofence} />
         </View>
       </View>
     );
