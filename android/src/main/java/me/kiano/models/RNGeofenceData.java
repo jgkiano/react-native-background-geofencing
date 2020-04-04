@@ -26,11 +26,9 @@ public class RNGeofenceData {
 
     public RNGeofenceData(GeofencingEvent geofencingEvent) {
         this.geofencingEvent = geofencingEvent;
-
         for (Geofence geofence : geofencingEvent.getTriggeringGeofences()) {
             geofenceIds.add(geofence.getRequestId());
         }
-
         if (!geofencingEvent.hasError()) {
             if (geofencingEvent.getGeofenceTransition() == Geofence.GEOFENCE_TRANSITION_EXIT) {
                 eventName = EXIT_EVENT_NAME;

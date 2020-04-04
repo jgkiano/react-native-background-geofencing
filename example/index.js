@@ -15,7 +15,7 @@ configure({
     console.log('------------');
   },
   webhook: {
-    url: 'http://192.168.100.190:4000/geofence',
+    url: 'http://192.168.1.97:4000/geofence',
     headers: {
       foo: 'bar',
     },

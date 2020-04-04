@@ -27,13 +27,13 @@ import java.util.concurrent.TimeUnit;
 import me.kiano.database.RNGeofenceDB;
 import me.kiano.models.RNGeofenceData;
 
-public class GeofenceTransitionsJobIntentService extends JobIntentService {
+public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
 
     public static final String TAG = "RNBackgroundGeofencing";
 
     public static void enqueueWork(Context context, Intent work) {
         Log.v(TAG, "GeofenceTransitionsJobIntentService called");
-        enqueueWork(context, GeofenceTransitionsJobIntentService.class, 456, work);
+        enqueueWork(context, RNGeofenceTransitionsJobIntentService.class, 456, work);
     }
 
     @Override
@@ -41,15 +41,16 @@ public class GeofenceTransitionsJobIntentService extends JobIntentService {
         Log.v(TAG, "GeofenceTransitionsJobIntentService work started");
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
         RNGeofenceData rnGeofenceData = new RNGeofenceData(geofencingEvent);
-        Intent service = new Intent(getApplicationContext(), OnGeoFenceEventJavaScriptTaskService.class);
+        Intent service = new Intent(getApplicationContext(), RNGeoFenceEventJavaScriptTaskService.class);
         Bundle bundle = new Bundle();
         RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(getApplicationContext());
         bundle.putString("event", rnGeofenceData.getEventName());
         bundle.putString("data", rnGeofenceData.getEventData());
+        Log.v(TAG, "Geofence transition: " + rnGeofenceData.getEventName());
+        Log.v(TAG, rnGeofenceData.getEventData());
         service.putExtras(bundle);
         getApplicationContext().startService(service);
         HeadlessJsTaskService.acquireWakeLockNow(getApplicationContext());
-        sendNotification(rnGeofenceData.getEventName());
 
         if (!rnGeofenceDB.hasWebhookConfiguration()) {
             return;
@@ -64,7 +65,7 @@ public class GeofenceTransitionsJobIntentService extends JobIntentService {
                 .putString("data", rnGeofenceData.getEventData())
                 .build();
 
-        OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(GeofenceWebhookWorker.class)
+        OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(RNGeofenceWebhookWorker.class)
                 .setConstraints(constraints)
                 .setInputData(rnGeofenceWorkData)
                 .addTag("RNGeofenceWork")
@@ -72,27 +73,5 @@ public class GeofenceTransitionsJobIntentService extends JobIntentService {
                 .build();
 
         WorkManager.getInstance(getApplicationContext()).enqueue(uploadWorkRequest);
-
-//        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.O || isAppOnForeground(getApplicationContext())) {
-//            getApplicationContext().startService(service);
-//        } else {
-//            getApplicationContext().startForegroundService(service);
-//        }
-    }
-
-    private void sendNotification (final String message) {
-        Vibrator v = (Vibrator) getApplicationContext().getSystemService(Context.VIBRATOR_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-        } else {
-            //deprecated in API 26
-            v.vibrate(500);
-        }
-        Handler handler = new Handler(Looper.getMainLooper());
-        handler.post(new Runnable() {
-            public void run() {
-                Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
-            }
-        });
     }
 }

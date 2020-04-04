@@ -9,7 +9,7 @@ import com.facebook.react.jstasks.HeadlessJsTaskConfig;
 
 import javax.annotation.Nullable;
 
-public class OnGeoFenceEventJavaScriptTaskService extends HeadlessJsTaskService {
+public class RNGeoFenceEventJavaScriptTaskService extends HeadlessJsTaskService {
 
     @Override
     public void onCreate() {
