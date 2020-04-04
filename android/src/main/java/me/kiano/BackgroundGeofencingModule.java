@@ -1,5 +1,11 @@
 package me.kiano;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
+
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -24,7 +30,18 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void add(ReadableMap geoFence, final Promise promise) {
         try {
+
+            int permission = ActivityCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+
+            Log.v("BackgroundGeofencing", "permission: " + permission);
+
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                promise.reject("permission_denied", "Access fine location is not permitted");
+                return;
+            }
+
             final RNGeofence rnGeofence = new RNGeofence(getReactApplicationContext(), geoFence);
+
             rnGeofence.start(rnGeofence.registerOnDeviceRestart, new RNGeofenceHandler() {
                 @Override
                 public void onSuccess(String geofenceId) {
@@ -38,6 +55,11 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         } catch (Exception e) {
             promise.reject("geofence_exception", "Failed to start geofence service for id: " + geoFence.getString("id"), e);
         }
+    }
+
+    @ReactMethod
+    public void remove(String id) {
+        RNGeofence.remove(getReactApplicationContext(), id);
     }
 
     @ReactMethod
