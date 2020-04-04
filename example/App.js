@@ -1,18 +1,12 @@
 import React, {Component} from 'react';
 import {Platform, StyleSheet, Text, View, Button} from 'react-native';
-import BackgroundGeofencing, {
-  onGeofenceEvent,
-} from 'react-native-background-geofencing';
+import BackgroundGeofencing from 'react-native-background-geofencing';
 import {request, check, PERMISSIONS} from 'react-native-permissions';
 
 class App extends React.Component {
   constructor(props) {
     super(props);
     this.askPermissions();
-    onGeofenceEvent(async ({EVENT_NAME, EVENT_DATA}) => {
-      console.log('EVENT_NAME: ', EVENT_NAME);
-      console.log(EVENT_DATA);
-    });
   }
 
   askPermissions = async () => {
@@ -52,12 +46,19 @@ class App extends React.Component {
     }
   };
 
+  removeGeofence = async () => {
+    BackgroundGeofencing.remove('kianoshome');
+  };
+
   render() {
     return (
       <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
         <Text>Welcome to geofencing</Text>
         <View style={{marginTop: 15}}>
           <Button title="Start Geofence" onPress={this.startGeofence} />
+        </View>
+        <View style={{marginTop: 15}}>
+          <Button title="Remove Geofence" onPress={this.removeGeofence} />
         </View>
       </View>
     );

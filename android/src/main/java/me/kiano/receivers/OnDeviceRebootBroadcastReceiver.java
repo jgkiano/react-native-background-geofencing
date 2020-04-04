@@ -8,12 +8,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
-import me.kiano.database.GeofenceDB;
-import me.kiano.interfaces.RNGeofenceHandler;
-import me.kiano.models.RNGeofence;
-
 public class OnDeviceRebootBroadcastReceiver extends BroadcastReceiver {
     public static final String TAG = "RNBackgroundGeofencing";
     @Override
