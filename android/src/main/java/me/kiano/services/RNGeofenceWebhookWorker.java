@@ -73,7 +73,7 @@ public class RNGeofenceWebhookWorker extends Worker {
                     .build();
             Response response = httpClient.newCall(request).execute();
             if (response.isSuccessful()) {
-                Log.e(TAG, "Request successfully sent status code: " + response.code());
+                Log.v(TAG, "Request successfully sent status code: " + response.code());
             } else {
                 Log.e(TAG, "Request failed with status code: " + response.code());
             }
