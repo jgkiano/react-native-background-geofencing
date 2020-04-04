@@ -56,4 +56,10 @@ export default {
       throw error;
     }
   },
+
+  remove(geofenceId) {
+    if (typeof geofenceId === 'string') {
+      return BackgroundGeofencing.remove(geofenceId);
+    }
+  },
 };
