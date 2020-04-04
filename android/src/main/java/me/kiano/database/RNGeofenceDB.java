@@ -36,7 +36,6 @@ public class RNGeofenceDB {
             db.put(GEOFENCE_KEY_PREFIX + rnGeofence.id, rnGeofence.toJSON());
             db.close();
             Log.v(TAG, "Geofence successfully saved to DB: " + rnGeofence.id);
-            getAllGeofences();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
