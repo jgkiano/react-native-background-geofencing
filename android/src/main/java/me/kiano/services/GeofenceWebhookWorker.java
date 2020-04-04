@@ -47,14 +47,14 @@ public class GeofenceWebhookWorker extends Worker {
     @Override
     public Result doWork() {
         if (httpClient == null || rnGeofenceWebhookConfiguration == null) {
-            Log.v(TAG, "Failed some nice work");
+            Log.v(TAG, "Unable to call webhook. Missing configuration");
             return Result.success();
         }
         try {
-            Log.v(TAG, "Doing some nice work");
+            Log.v(TAG, "Started webhook work");
             String event = getInputData().getString("event");
             String data = getInputData().getString("data");
-            Log.v(TAG, "EVENT NAME: " + event);
+            Log.v(TAG, "Sending event: " + event);
             Log.v(TAG, data);
             ArrayList<Object> excludes = rnGeofenceWebhookConfiguration.getExclude();
             JSONObject jsonData = new JSONObject(data);
