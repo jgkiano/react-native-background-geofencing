@@ -21,7 +21,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public class GeofenceWebhookWorker extends Worker {
+public class RNGeofenceWebhookWorker extends Worker {
 
     private OkHttpClient httpClient;
 
@@ -29,7 +29,7 @@ public class GeofenceWebhookWorker extends Worker {
 
     private RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration;
 
-    public GeofenceWebhookWorker(@NonNull Context context, @NonNull WorkerParameters params) {
+    public RNGeofenceWebhookWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
         try {
             RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(getApplicationContext());
