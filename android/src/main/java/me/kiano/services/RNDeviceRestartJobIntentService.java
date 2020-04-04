@@ -19,7 +19,7 @@ public class RNDeviceRestartJobIntentService extends JobIntentService {
 
     public static void enqueueWork(Context context, Intent work) {
         Log.v(TAG, "RNDeviceRestartJobIntentService called");
-        enqueueWork(context, RNGeofenceTransitionsJobIntentService.class, 456, work);
+        enqueueWork(context, RNDeviceRestartJobIntentService.class, 789, work);
     }
 
     @Override
