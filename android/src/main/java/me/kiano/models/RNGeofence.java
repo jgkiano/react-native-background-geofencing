@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import me.kiano.database.RNGeofenceDB;
 import me.kiano.interfaces.RNGeofenceHandler;
@@ -39,6 +40,16 @@ public class RNGeofence {
     private GeofencingClient geofencingClient;
     private PendingIntent geofencePendingIntent;
     private final String TAG = "RNGeofence";
+
+    public static void remove(Context context,String id) {
+        GeofencingClient geofencingClient = LocationServices.getGeofencingClient(context);
+        List<String> ids = new ArrayList<String>();
+        RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(context);
+        ids.add(id);
+        geofencingClient.removeGeofences(ids);
+        rnGeofenceDB.removeGeofence(id);
+        Log.v("RNGeofence", "Geofence successfully removed from client and DB :)");
+    }
 
     public RNGeofence (Context context, JSONObject geoFence) throws JSONException {
         this.context = context;
