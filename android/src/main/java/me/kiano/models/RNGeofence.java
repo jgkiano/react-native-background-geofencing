@@ -21,7 +21,7 @@ import java.util.List;
 
 import me.kiano.database.RNGeofenceDB;
 import me.kiano.interfaces.RNGeofenceHandler;
-import me.kiano.receivers.GeofenceBroadcastReceiver;
+import me.kiano.receivers.RNGeofenceBroadcastReceiver;
 
 public class RNGeofence {
     public final String id;
@@ -116,7 +116,7 @@ public class RNGeofence {
         if (geofencePendingIntent != null) {
             return geofencePendingIntent;
         }
-        Intent intent = new Intent(context, GeofenceBroadcastReceiver.class);
+        Intent intent = new Intent(context, RNGeofenceBroadcastReceiver.class);
         geofencePendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         return geofencePendingIntent;
     }
