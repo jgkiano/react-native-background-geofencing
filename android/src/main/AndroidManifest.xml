@@ -12,12 +12,12 @@
     <application>
 
         <receiver
-            android:name=".receivers.GeofenceBroadcastReceiver"
+            android:name=".receivers.RNGeofenceBroadcastReceiver"
             android:enabled="true"
             android:exported="true" />
 
         <receiver android:enabled="true"
-            android:name=".receivers.OnDeviceRebootBroadcastReceiver"
+            android:name=".receivers.RNDeviceRebootBroadcastReceiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -26,12 +26,18 @@
         </receiver>
 
         <service
-        android:name=".services.GeofenceTransitionsJobIntentService"
+        android:name=".services.RNGeofenceTransitionsJobIntentService"
         android:exported="true"
         android:enabled="true"
         android:permission="android.permission.BIND_JOB_SERVICE" />
 
-        <service android:name=".services.OnGeoFenceEventJavaScriptTaskService" />
+        <service
+            android:name=".services.RNDeviceRestartJobIntentService"
+            android:exported="true"
+            android:enabled="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <service android:name=".services.RNGeoFenceEventJavaScriptTaskService" />
 
     </application>
 
