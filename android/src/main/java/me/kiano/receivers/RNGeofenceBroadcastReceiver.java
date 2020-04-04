@@ -5,14 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import me.kiano.services.GeofenceTransitionsJobIntentService;
+import me.kiano.services.RNGeofenceTransitionsJobIntentService;
 
-public class GeofenceBroadcastReceiver extends BroadcastReceiver {
+public class RNGeofenceBroadcastReceiver extends BroadcastReceiver {
     public static final String TAG = "RNBackgroundGeofencing";
 
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.v(TAG, "GeofenceBroadcastReceiver received!");
-        GeofenceTransitionsJobIntentService.enqueueWork(context, intent);
+        RNGeofenceTransitionsJobIntentService.enqueueWork(context, intent);
     }
 }
