@@ -65,7 +65,10 @@ public class RNGeofenceWebhookWorker extends Worker {
                     jsonData.remove(item);
                 }
             }
-            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), jsonData.toString());
+            JSONObject payload = new JSONObject();
+            payload.put("event", event);
+            payload.put("data", jsonData);
+            RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), payload.toString());
             Request request = new Request.Builder()
                     .url(rnGeofenceWebhookConfiguration.getUrl())
                     .headers(rnGeofenceWebhookConfiguration.getHeaders())
