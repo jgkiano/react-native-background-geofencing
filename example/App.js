@@ -38,7 +38,7 @@ class App extends React.Component {
         lat: -1.314683,
         lng: 36.836333,
         radius: 300,
-        initialiseOnDeviceRestart: true,
+        registerOnDeviceRestart: true,
       });
       console.log(addResult, 'addResult');
     } catch (error) {
