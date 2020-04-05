@@ -1,15 +1,11 @@
 package me.kiano.services;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
@@ -22,6 +18,7 @@ import androidx.work.WorkManager;
 import com.facebook.react.HeadlessJsTaskService;
 import com.google.android.gms.location.GeofencingEvent;
 
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import me.kiano.database.RNGeofenceDB;
@@ -41,15 +38,21 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
         Log.v(TAG, "GeofenceTransitionsJobIntentService work started");
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
         RNGeofenceData rnGeofenceData = new RNGeofenceData(geofencingEvent);
+        RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(getApplicationContext());
+
         Intent service = new Intent(getApplicationContext(), RNGeoFenceEventJavaScriptTaskService.class);
         Bundle bundle = new Bundle();
-        RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(getApplicationContext());
         bundle.putString("event", rnGeofenceData.getEventName());
         bundle.putString("data", rnGeofenceData.getEventData());
         Log.v(TAG, "Geofence transition: " + rnGeofenceData.getEventName());
         Log.v(TAG, rnGeofenceData.getEventData());
         service.putExtras(bundle);
-        getApplicationContext().startService(service);
+
+        if (!isAppOnForeground(getApplicationContext()) && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getApplicationContext().startForegroundService(service);
+        } else {
+            getApplicationContext().startService(service);
+        }
         HeadlessJsTaskService.acquireWakeLockNow(getApplicationContext());
 
         if (!rnGeofenceDB.hasWebhookConfiguration()) {
@@ -73,5 +76,23 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
                 .build();
 
         WorkManager.getInstance(getApplicationContext()).enqueue(uploadWorkRequest);
+    }
+
+    private boolean isAppOnForeground(Context context) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appProcesses =
+                activityManager.getRunningAppProcesses();
+        if (appProcesses == null) {
+            return false;
+        }
+        final String packageName = context.getPackageName();
+        for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
+            if (appProcess.importance ==
+                    ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND &&
+                    appProcess.processName.equals(packageName)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
