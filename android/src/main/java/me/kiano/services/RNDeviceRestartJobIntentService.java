@@ -19,13 +19,14 @@ public class RNDeviceRestartJobIntentService extends JobIntentService {
 
     public static void enqueueWork(Context context, Intent work) {
         Log.v(TAG, "RNDeviceRestartJobIntentService called");
-        enqueueWork(context, RNDeviceRestartJobIntentService.class, 789, work);
+        enqueueWork(context, RNDeviceRestartJobIntentService.class, 665, work);
     }
 
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
         RNGeofenceDB db = new RNGeofenceDB(getApplication());
         ArrayList<RNGeofence> storedGeofences = db.getAllGeofences();
+        Log.v(TAG, "RNDeviceRestartJobIntentService work started: " + storedGeofences.size());
         for (RNGeofence storedGeofence: storedGeofences) {
             storedGeofence.start(false, new RNGeofenceHandler() {
                 @Override
