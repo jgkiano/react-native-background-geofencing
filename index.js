@@ -10,25 +10,36 @@ const defaultWebhookConfiguration = {
   exclude: [],
 };
 
-export const configure = (configuration = {}) => {
-  const {jsTask} = configuration;
-  let {webhook} = configuration;
-  if (jsTask && typeof jsTask !== 'function') {
-    throw new Error('invalid jsTask function provided');
+export const configureJSTask = (jsTakConfig = {}) => {
+  if (typeof jsTakConfig !== 'object') {
+    throw new Error('invalid JavaScript task configuration provided');
   }
-  if (webhook && typeof webhook !== 'object') {
-    throw new Error('invalid webhook configuration provided');
+
+  const notification = jsTakConfig.notification || null;
+
+  const task = jsTakConfig.task || null;
+
+  if (typeof notification === 'object') {
+    const {title, text} = notification;
+    if (typeof title !== 'string' || typeof text !== 'string') {
+      throw new Error('invalid notification configuration provided');
+    }
+    BackgroundGeofencing.configureNotification(notification);
   }
-  if (webhook && typeof webhook.url !== 'string') {
-    throw new Error('invalid webhook configuration provided');
+
+  if (typeof task === 'function') {
+    AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => task);
   }
-  if (jsTask) {
-    AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => jsTask);
-  }
-  if (webhook) {
+};
+
+export const configureWebhook = (webhookConfig = {}) => {
+  if (
+    typeof webhookConfig === 'object' &&
+    typeof webhookConfig.url === 'string'
+  ) {
     BackgroundGeofencing.configureWebhook({
       ...defaultWebhookConfiguration,
-      ...webhook,
+      ...webhookConfig,
     });
   }
 };
@@ -59,7 +70,7 @@ export default {
 
   remove(geofenceId) {
     if (typeof geofenceId === 'string') {
-      return BackgroundGeofencing.remove(geofenceId);
+      BackgroundGeofencing.remove(geofenceId);
     }
   },
 };

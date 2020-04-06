@@ -40,6 +40,28 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
         RNGeofenceData rnGeofenceData = new RNGeofenceData(geofencingEvent);
         RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(getApplicationContext());
 
+        if (rnGeofenceDB.hasWebhookConfiguration()) {
+            Constraints constraints = new Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build();
+
+            Data rnGeofenceWorkData = new Data.Builder()
+                    .putString("event", rnGeofenceData.getEventName())
+                    .putString("data", rnGeofenceData.getEventData())
+                    .build();
+
+            OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(RNGeofenceWebhookWorker.class)
+                    .setConstraints(constraints)
+                    .setInputData(rnGeofenceWorkData)
+                    .addTag("RNGeofenceWork")
+                    .setInitialDelay(1, TimeUnit.MINUTES)
+                    .build();
+
+            WorkManager.getInstance(getApplicationContext()).enqueue(uploadWorkRequest);
+
+            Log.v(TAG, "Geofence work request queued up");
+        }
+
         Intent service = new Intent(getApplicationContext(), RNGeoFenceEventJavaScriptTaskService.class);
         Bundle bundle = new Bundle();
         bundle.putString("event", rnGeofenceData.getEventName());
@@ -47,35 +69,12 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
         Log.v(TAG, "Geofence transition: " + rnGeofenceData.getEventName());
         Log.v(TAG, rnGeofenceData.getEventData());
         service.putExtras(bundle);
-
         if (!isAppOnForeground(getApplicationContext()) && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             getApplicationContext().startForegroundService(service);
         } else {
             getApplicationContext().startService(service);
         }
         HeadlessJsTaskService.acquireWakeLockNow(getApplicationContext());
-
-        if (!rnGeofenceDB.hasWebhookConfiguration()) {
-            return;
-        }
-
-        Constraints constraints = new Constraints.Builder()
-                .setRequiredNetworkType(NetworkType.CONNECTED)
-                .build();
-
-        Data rnGeofenceWorkData = new Data.Builder()
-                .putString("event", rnGeofenceData.getEventName())
-                .putString("data", rnGeofenceData.getEventData())
-                .build();
-
-        OneTimeWorkRequest uploadWorkRequest = new OneTimeWorkRequest.Builder(RNGeofenceWebhookWorker.class)
-                .setConstraints(constraints)
-                .setInputData(rnGeofenceWorkData)
-                .addTag("RNGeofenceWork")
-                .setInitialDelay(1, TimeUnit.MINUTES)
-                .build();
-
-        WorkManager.getInstance(getApplicationContext()).enqueue(uploadWorkRequest);
     }
 
     private boolean isAppOnForeground(Context context) {

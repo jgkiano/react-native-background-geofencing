@@ -15,6 +15,7 @@ import com.facebook.react.bridge.ReadableMap;
 import me.kiano.interfaces.RNGeofenceHandler;
 import me.kiano.models.RNGeofence;
 import me.kiano.models.RNGeofenceWebhookConfiguration;
+import me.kiano.models.RNNotification;
 
 public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
@@ -66,6 +67,13 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     public void configureWebhook (ReadableMap configureWebhook, final Promise promise) {
         RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration = new RNGeofenceWebhookConfiguration(configureWebhook);
         rnGeofenceWebhookConfiguration.save(getReactApplicationContext());
+        promise.resolve(true);
+    }
+
+    @ReactMethod
+    public void configureNotification (ReadableMap configureNotification, final Promise promise) {
+        RNNotification notification = new RNNotification(configureNotification);
+        notification.save(getReactApplicationContext());
         promise.resolve(true);
     }
 
