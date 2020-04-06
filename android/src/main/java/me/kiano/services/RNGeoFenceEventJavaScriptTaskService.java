@@ -14,10 +14,16 @@ import androidx.core.app.NotificationCompat;
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.jstasks.HeadlessJsTaskConfig;
+import com.snappydb.SnappydbException;
+
+import org.json.JSONException;
 
 import java.util.List;
 
 import javax.annotation.Nullable;
+
+import me.kiano.database.RNGeofenceDB;
+import me.kiano.models.RNNotification;
 
 public class RNGeoFenceEventJavaScriptTaskService extends HeadlessJsTaskService {
 
@@ -26,7 +32,14 @@ public class RNGeoFenceEventJavaScriptTaskService extends HeadlessJsTaskService 
     @Override
     public void onCreate() {
         super.onCreate();
-        if (!isAppOnForeground(getApplicationContext()) && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        RNGeofenceDB db = new RNGeofenceDB(getApplicationContext());
+        RNNotification rnNotification = null;
+        try {
+            rnNotification = db.getNotification();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (!isAppOnForeground(getApplicationContext()) && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && rnNotification != null) {
 
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "RNBackgroundGeofencing", importance);
@@ -35,8 +48,8 @@ public class RNGeoFenceEventJavaScriptTaskService extends HeadlessJsTaskService 
             notificationManager.createNotificationChannel(channel);
 
             Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("Notification title")
-                    .setContentText("Notification title text")
+                    .setContentTitle(rnNotification.getTitle())
+                    .setContentText(rnNotification.getText())
                     .setSmallIcon(getApplicationContext().getApplicationInfo().icon)
                     .build();
 
