@@ -1,27 +1,26 @@
-/**
- * @format
- */
-
 import {AppRegistry} from 'react-native';
+import {
+  configureJSTask,
+  configureWebhook,
+} from 'react-native-background-geofencing';
 import App from './App';
 import {name as appName} from './app.json';
-import {configure} from 'react-native-background-geofencing';
+import geofenceTask from './geofence-task';
 
-configure({
-  jsTask: async ({event, data}) => {
-    console.log('---CLIENT---');
-    console.log(event);
-    console.log(data);
-    console.log('------------');
+configureJSTask({
+  task: geofenceTask,
+  notification: {
+    title: 'Geofence warming up',
+    text: 'Registering geofences...',
   },
-  webhook: {
-    url: 'http://192.168.1.97:4000/geofence',
-    headers: {
-      foo: 'bar',
-    },
-    timeout: 20000,
-    exclude: ['altitude'],
+});
+
+configureWebhook({
+  url: 'http://192.168.1.97:4000/geofence',
+  headers: {
+    foo: 'bar',
   },
+  exclude: ['altitude'],
 });
 
 AppRegistry.registerComponent(appName, () => App);
