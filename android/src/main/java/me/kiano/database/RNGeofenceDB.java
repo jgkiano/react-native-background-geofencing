@@ -14,6 +14,7 @@ import java.util.ArrayList;
 
 import me.kiano.models.RNGeofence;
 import me.kiano.models.RNGeofenceWebhookConfiguration;
+import me.kiano.models.RNNotification;
 
 public class RNGeofenceDB {
     private final Context context;
@@ -29,6 +30,8 @@ public class RNGeofenceDB {
     private String GEOFENCE_KEY_PREFIX = "RNGeofenceDB:v1:";
 
     private String WEBHOOK_CONFIG_KEY = "RNWebhookDB:v1:configuration";
+
+    private String NOTIFICATION_CONFIG_KEY = "RNNotificationDB:v1:configuration";
 
     public void saveGeofence (RNGeofence rnGeofence) {
         try {
@@ -79,9 +82,8 @@ public class RNGeofenceDB {
         try {
             DB db = DBFactory.open(context, DB_NAME);
             db.put(WEBHOOK_CONFIG_KEY, rnGeofenceWebhookConfiguration.toJSON());
-            RNGeofenceWebhookConfiguration stored = new RNGeofenceWebhookConfiguration(new JSONObject(db.get(WEBHOOK_CONFIG_KEY)));
             db.close();
-            Log.v(TAG, "Geofence Webhook successfully saved to DB: " + rnGeofenceWebhookConfiguration.toJSON() + " stored: " + stored.getUrl());
+            Log.v(TAG, "Geofence Webhook successfully saved to DB: " + rnGeofenceWebhookConfiguration.toJSON() + " stored: " + rnGeofenceWebhookConfiguration.getUrl());
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
@@ -104,6 +106,27 @@ public class RNGeofenceDB {
             return db.exists(WEBHOOK_CONFIG_KEY);
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    public void saveNotification (RNNotification notification) {
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            db.put(NOTIFICATION_CONFIG_KEY, notification.toJSON());
+            db.close();
+            Log.v(TAG, "Geofence notification successfully saved to DB: " + notification.toJSON() + " stored: " + notification.getText());
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        }
+    }
+
+    public RNNotification getNotification () throws JSONException, SnappydbException {
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            RNNotification notification = new RNNotification(new JSONObject(db.get(NOTIFICATION_CONFIG_KEY)));
+            return notification;
+        } catch (Exception e) {
+            throw e;
         }
     }
 }
