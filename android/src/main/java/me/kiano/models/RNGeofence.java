@@ -140,6 +140,8 @@ public class RNGeofence {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(Exception e) {
+                            Log.v(TAG, e.getMessage());
+                            e.printStackTrace();
                             Log.v(TAG, "Geofence add failed :(");
                             handler.onError(id, e);
                         }
