@@ -9,6 +9,7 @@ export default class Repository {
 
   addGeofence = async geofence => {
     try {
+      await BackgroundGeofencing.add(geofence);
       let storedGeofences = await this.getGeofences();
       if (storedGeofences.length) {
         storedGeofences = storedGeofences.filter(
@@ -20,7 +21,6 @@ export default class Repository {
         this.DB_STORED_GEOFENCE_KEY,
         JSON.stringify(storedGeofences),
       );
-      await BackgroundGeofencing.add(geofence);
       return storedGeofences;
     } catch (error) {
       console.log(error);
