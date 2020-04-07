@@ -6,6 +6,7 @@ import {
 import App from './App';
 import {name as appName} from './app.json';
 import task from './src/services/task';
+import secrets from './secrets.json';
 
 configureJSTask({
   task,
@@ -16,11 +17,7 @@ configureJSTask({
 });
 
 configureWebhook({
-  url: 'http://192.168.1.97:4000/geofence',
-  headers: {
-    foo: 'bar',
-  },
-  exclude: ['altitude'],
+  url: secrets.webhook,
 });
 
 AppRegistry.registerComponent(appName, () => App);
