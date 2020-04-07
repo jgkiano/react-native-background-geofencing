@@ -73,7 +73,7 @@ public class RNGeofence {
         lat = geoFence.getDouble("lat");
         lng = geoFence.getDouble("lng");
         radius = (float) geoFence.getDouble("radius");
-        expiration = geoFence.getDouble("expiration") > 0 ? (long) geoFence.getDouble("expiration") * 1000 : Geofence.NEVER_EXPIRE;
+        expiration = geoFence.getDouble("expiration") > 0 ? (long) geoFence.getDouble("expiration") : Geofence.NEVER_EXPIRE;
         notificationResponsiveness = geoFence.getInt("notificationResponsiveness");
         loiteringDelay = geoFence.getInt("loiteringDelay");
         dwellTransitionType = geoFence.getBoolean("setDwellTransitionType") ? Geofence.GEOFENCE_TRANSITION_DWELL : 0;
