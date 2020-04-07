@@ -5,10 +5,10 @@ import {
 } from 'react-native-background-geofencing';
 import App from './App';
 import {name as appName} from './app.json';
-import geofenceTask from './geofence-task';
+import task from './src/services/task';
 
 configureJSTask({
-  task: geofenceTask,
+  task,
   notification: {
     title: 'Geofence warming up',
     text: 'Registering geofences...',
