@@ -67,7 +67,7 @@ export default class ModalBody extends React.Component {
       id,
       lat: parseFloat(lat),
       lng: parseFloat(lng),
-      radius: parseFloat(lng),
+      radius: parseFloat(radius),
       expiration: expiration === '-1' ? -1 : Number(expiration),
       registerOnDeviceRestart,
       setDwellTransitionType,
