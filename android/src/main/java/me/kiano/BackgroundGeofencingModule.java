@@ -1,7 +1,11 @@
 package me.kiano;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
@@ -23,6 +27,23 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         super(reactContext);
     }
 
+    public static boolean isLocationEnabled(Context context) {
+        int locationMode = 0;
+        String locationProviders;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+            try {
+                locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+            } catch (Settings.SettingNotFoundException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
+        } else{
+            locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            return !TextUtils.isEmpty(locationProviders);
+        }
+    }
+
     @Override
     public String getName() {
         return "BackgroundGeofencing";
@@ -38,6 +59,11 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
             if (permission != PackageManager.PERMISSION_GRANTED) {
                 promise.reject("permission_denied", "Access fine location is not permitted");
+                return;
+            }
+
+            if (!isLocationEnabled(getReactApplicationContext())) {
+                promise.reject("location_services_disabled", "Location services are disabled");
                 return;
             }
 
