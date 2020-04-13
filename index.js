@@ -14,6 +14,7 @@ export const configureJSTask = (jsTakConfig = {}) => {
   if (Platform.OS !== 'android') {
     return;
   }
+
   if (typeof jsTakConfig !== 'object') {
     throw new Error('invalid JavaScript task configuration provided');
   }
