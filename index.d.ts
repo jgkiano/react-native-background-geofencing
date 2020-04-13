@@ -3,13 +3,15 @@
 // Definitions by: Kiano (@jgkiano)
 // Definitions: https://github.com/jgkiano/react-native-background-geofencing/blob/master/index.d.ts
 
-interface GeofenceData {
-  event:
-    | 'GEOFENCE_TRANSITION_ENTER'
-    | 'GEOFENCE_TRANSITION_EXIT'
-    | 'GEOFENCE_TRANSITION_DWELL'
-    | 'GEOFENCE_TRANSITION_UNKNOWN'
-    | 'GEOFENCE_TRANSITION_ERROR';
+export type RNGeofenceEvent =
+  | 'GEOFENCE_TRANSITION_ENTER'
+  | 'GEOFENCE_TRANSITION_EXIT'
+  | 'GEOFENCE_TRANSITION_DWELL'
+  | 'GEOFENCE_TRANSITION_UNKNOWN'
+  | 'GEOFENCE_TRANSITION_ERROR';
+
+export interface RNGeofenceEventData {
+  event: RNGeofenceEvent;
   data: {
     accuracy?: number;
     altitude?: number;
@@ -22,22 +24,26 @@ interface GeofenceData {
   };
 }
 
-interface JSTaskConfig {
-  task: (data: GeofenceData) => Promise<any>;
+export type RNGeofenceJSTask = (
+  geofenceEvent: RNGeofenceEventData,
+) => Promise<any>;
+
+export interface RNGeofenceJSTaskConfig {
+  task: RNGeofenceJSTask;
   notification: {
     title: string;
     text: string;
   };
 }
 
-interface WebhookConfig {
+export interface RNGeofenceWebhookConfig {
   url: string;
   headers?: Array<{[key: string]: any}>;
   timeout?: number;
   exclude?: Array<string>;
 }
 
-interface Geofence {
+export interface RNGeofence {
   id: string;
   lat: number;
   lng: number;
@@ -50,23 +56,15 @@ interface Geofence {
   setInitialTriggers?: boolean;
 }
 
-export interface GeofenceEvent {
-  ENTER: string;
-  EXIT: string;
-  DWELL: string;
-  UNKNOWN: string;
-  ERROR: string;
-}
-
-export function configureJSTask(jsTakConfig: JSTaskConfig): void;
-
-export function configureWebhook(webhookConfig: WebhookConfig): void;
-
-export interface RNBackgroundGeofencing {
-  add(geofence: Geofence): Promise<string>;
+export interface BackgroundGeofencing {
+  add(geofence: RNGeofence): Promise<string>;
   remove(geofenceId: string): void;
 }
 
-declare const BackgroundGeofencing: RNBackgroundGeofencing;
+export function configureJSTask(jsTakConfig: RNGeofenceJSTaskConfig): void;
 
-export default BackgroundGeofencing;
+export function configureWebhook(webhookConfig: RNGeofenceWebhookConfig): void;
+
+declare const RNBackgroundGeofencing: BackgroundGeofencing;
+
+export default RNBackgroundGeofencing;
