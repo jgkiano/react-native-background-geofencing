@@ -70,7 +70,8 @@ configureJSTask({
   },
 });
 
-// If you'd like to ship the events to a server use this. Its guaranteed to run when the device has an internet connection using Android's Work manager API
+// If you'd like to ship the events to a server use this.
+// Its guaranteed to run when the device has an internet connection using Android's Work manager API
 
 configureWebhook({
   url: 'https://myapi.com/geofences',
