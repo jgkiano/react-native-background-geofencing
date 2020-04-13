@@ -38,13 +38,11 @@ Add the following permissions to your `AndroidManifest.xml`
 The task will be executed in the background even after the device restarts.
 
 ```javascript
-import {GeofenceEvent} from 'react-native-background-geofencing';
-
 export default async function myTask({event, data}) {
   // handle Geofence updates here
   const geofenceData = JSON.parse(data);
 
-  if (event === GeofenceEvent.ENTER) {
+  if (event === 'GEOFENCE_TRANSITION_ENTER') {
     console.log(`welcome to ${geofenceData.lat},${geofenceData.lng}`);
   }
 }
@@ -88,7 +86,7 @@ AppRegistry.registerComponent(appName, () => App);
 ### 4. Add / Remove Geofences
 
 ```javascript
-import BackgroundGeofencing from 'react-native-background-geofencing';
+import RNBackgroundGeofencing from 'react-native-background-geofencing';
 
 const geofence = {
   id: 'mygeofence',
@@ -96,9 +94,9 @@ const geofence = {
   lng: 36.820389,
 };
 
-await BackgroundGeofencing.add(geofence);
+await RNBackgroundGeofencing.add(geofence);
 
-await BackgroundGeofencing.remove(geofence.id);
+await RNBackgroundGeofencing.remove(geofence.id);
 ```
 
 ## Contributions

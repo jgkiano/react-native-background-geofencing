@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-community/async-storage';
-import BackgroundGeofencing from 'react-native-background-geofencing';
+import RNBackgroundGeofencing from 'react-native-background-geofencing';
 
 export default class Repository {
   constructor() {
@@ -9,7 +9,7 @@ export default class Repository {
 
   addGeofence = async geofence => {
     try {
-      await BackgroundGeofencing.add(geofence);
+      await RNBackgroundGeofencing.add(geofence);
       let storedGeofences = await this.getGeofences();
       if (storedGeofences.length) {
         storedGeofences = storedGeofences.filter(
@@ -81,7 +81,7 @@ export default class Repository {
       console.log('removed Geofence from gen pop');
       await AsyncStorage.removeItem(KEY);
       console.log('removed Geofence events');
-      await BackgroundGeofencing.remove(geofenceId);
+      await RNBackgroundGeofencing.remove(geofenceId);
       console.log('removed listener');
     } catch (error) {
       console.log(error);
