@@ -1,4 +1,44 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="me.kiano">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+    <application>
+
+        <receiver
+            android:name=".receivers.RNGeofenceBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true" />
+
+        <receiver android:enabled="true"
+            android:name=".receivers.RNDeviceRebootBroadcastReceiver"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <service
+        android:name=".services.RNGeofenceTransitionsJobIntentService"
+        android:exported="true"
+        android:enabled="true"
+        android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <service
+            android:name=".services.RNDeviceRestartJobIntentService"
+            android:exported="true"
+            android:enabled="true"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <service android:name=".services.RNGeoFenceEventJavaScriptTaskService" />
+
+    </application>
+
 </manifest>
