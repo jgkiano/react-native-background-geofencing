@@ -52,10 +52,7 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void add(ReadableMap geoFence, final Promise promise) {
         try {
-
             int permission = ActivityCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-
-            Log.v("BackgroundGeofencing", "permission: " + permission);
 
             if (permission != PackageManager.PERMISSION_GRANTED) {
                 promise.reject("permission_denied", "Access fine location is not permitted");
