@@ -1,4 +1,4 @@
-import {NativeModules} from 'react-native';
+import {NativeModules, Platform} from 'react-native';
 import {AppRegistry} from 'react-native';
 
 const {BackgroundGeofencing} = NativeModules;
@@ -11,6 +11,9 @@ const defaultWebhookConfiguration = {
 };
 
 export const configureJSTask = (jsTakConfig = {}) => {
+  if (Platform.OS !== 'android') {
+    return;
+  }
   if (typeof jsTakConfig !== 'object') {
     throw new Error('invalid JavaScript task configuration provided');
   }
@@ -34,6 +37,7 @@ export const configureJSTask = (jsTakConfig = {}) => {
 
 export const configureWebhook = (webhookConfig = {}) => {
   if (
+    Platform.OS === 'android' &&
     typeof webhookConfig === 'object' &&
     typeof webhookConfig.url === 'string'
   ) {
@@ -62,14 +66,17 @@ export default {
           'RN:BackgroundGeofencing: Must provide at least a valid id, lat and lng',
         );
       }
-      return await BackgroundGeofencing.add({...defaults, ...geofence});
+      if (Platform.OS === 'android') {
+        return await BackgroundGeofencing.add({...defaults, ...geofence});
+      }
+      return id;
     } catch (error) {
       throw error;
     }
   },
 
   remove(geofenceId) {
-    if (typeof geofenceId === 'string') {
+    if (typeof geofenceId === 'string' && Platform.OS === 'android') {
       BackgroundGeofencing.remove(geofenceId);
     }
   },
