@@ -38,7 +38,7 @@ Add the following permissions to your `AndroidManifest.xml`
 The task will be executed in the background even after device restarts.
 
 ```javascript
-import {GeofenceEvent} from '';
+import {GeofenceEvent} from 'react-native-background-geofencing';
 
 export default async function myTask({event, data}) {
   // handle Geofence updates here
