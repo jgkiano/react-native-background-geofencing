@@ -49,14 +49,6 @@ export const configureWebhook = (webhookConfig = {}) => {
   }
 };
 
-export const GeofenceEvent = {
-  ENTER: 'GEOFENCE_TRANSITION_ENTER',
-  EXIT: 'GEOFENCE_TRANSITION_EXIT',
-  DWELL: 'GEOFENCE_TRANSITION_DWELL',
-  UNKNOWN: 'GEOFENCE_TRANSITION_UNKNOWN',
-  ERROR: 'GEOFENCE_TRANSITION_ERROR',
-};
-
 export default {
   async add(geofence = {}) {
     const {id, lat, lng} = geofence;
