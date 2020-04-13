@@ -35,7 +35,7 @@ Add the following permissions to your `AndroidManifest.xml`
 
 #### 2. Place the following code inside `myTask.js`
 
-The task will be executed in the background even after device restarts.
+The task will be executed in the background even after the device restarts.
 
 ```javascript
 import {GeofenceEvent} from 'react-native-background-geofencing';
@@ -52,9 +52,11 @@ export default async function myTask({event, data}) {
 
 ### 3. Configure your JavaScript task and/or webhook
 
-Add the following in your apps `index.js` file.
+Add the following in your app's `index.js` file.
 
 ```javascript
+import {AppRegistry} from 'react-native';
+import App from './App';
 import {
   configureJSTask,
   configureWebhook,
@@ -79,6 +81,8 @@ configureWebhook({
     foo: 'Bar',
   },
 });
+
+AppRegistry.registerComponent(appName, () => App);
 ```
 
 ### 4. Add / Remove Geofences
