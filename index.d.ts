@@ -50,6 +50,14 @@ interface Geofence {
   setInitialTriggers?: boolean;
 }
 
+export interface GeofenceEvent {
+  ENTER: string;
+  EXIT: string;
+  DWELL: string;
+  UNKNOWN: string;
+  ERROR: string;
+}
+
 export function configureJSTask(jsTakConfig: JSTaskConfig): void;
 
 export function configureWebhook(webhookConfig: WebhookConfig): void;
