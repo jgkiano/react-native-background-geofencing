@@ -72,7 +72,11 @@ repositories {
 
 dependencies {
     //noinspection GradleDynamicVersion
-    implementation 'com.facebook.react:react-native:+'  // From node_modules
+    api "com.facebook.react:react-native:+"  // From node_modules
+    api 'com.snappydb:snappydb-lib:0.5.2'
+    api 'com.esotericsoftware.kryo:kryo:2.24.0'
+    implementation 'com.google.android.gms:play-services-location:17.0.0'
+    implementation "androidx.work:work-runtime:2.3.4"
 }
 
 def configureReactNativePom(def pom) {

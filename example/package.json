@@ -1,5 +1,5 @@
 {
-  "name": "example",
+  "name": "RNBackgroundGeofencing",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -8,12 +8,26 @@
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint .",
-    "postinstall": "node ../scripts/examples_postinstall.js"
+    "postinstall": "node ../scripts/examples_postinstall.js && yarn cache clean",
+    "build:android": "npx react-native bundle --dev false --platform android --entry-file index.js --bundle-output ./android/app/src/main/assets/index.android.bundle --assets-dest ./android/app/src/main/res && cd android/ && ./gradlew assembleDebug && cd.."
   },
   "dependencies": {
+    "@react-native-community/async-storage": "^1.9.0",
+    "@react-native-community/checkbox": "^0.3.0",
+    "@react-native-community/masked-view": "^0.1.7",
+    "@react-navigation/native": "^5.1.4",
+    "@react-navigation/stack": "^5.2.9",
+    "lodash": "^4.17.15",
+    "moment": "^2.24.0",
     "react": "16.9.0",
     "react-native": "0.61.5",
-    "react-native-background-geofencing": "file:../"
+    "react-native-background-geofencing": "file:../",
+    "react-native-gesture-handler": "^1.6.1",
+    "react-native-permissions": "^2.0.10",
+    "react-native-reanimated": "^1.7.1",
+    "react-native-safe-area-context": "^0.7.3",
+    "react-native-screens": "^2.4.0",
+    "validator": "^13.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.6.2",
