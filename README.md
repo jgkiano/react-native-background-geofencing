@@ -1,4 +1,6 @@
-# react-native-background-geofencing
+# React Native Background Geofencing
+
+A reliable React Native geofencing library, that works in the background and survives device restarts.
 
 **WARNING: Currently only supports Android devices. Plans for iOS are underway**
 
