@@ -56,11 +56,11 @@ Add the following in your app's `index.js` file.
 
 ```javascript
 import {AppRegistry} from 'react-native';
-import App from './App';
 import {
   configureJSTask,
   configureWebhook,
 } from 'react-native-background-geofencing';
+import App from './App';
 import myTask from './myTask.js';
 
 configureJSTask({
