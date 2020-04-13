@@ -5,10 +5,11 @@ import {
 } from 'react-native-background-geofencing';
 import App from './App';
 import {name as appName} from './app.json';
-import geofenceTask from './geofence-task';
+import task from './src/services/task';
+import secrets from './secrets.json';
 
 configureJSTask({
-  task: geofenceTask,
+  task,
   notification: {
     title: 'Geofence warming up',
     text: 'Registering geofences...',
@@ -16,11 +17,7 @@ configureJSTask({
 });
 
 configureWebhook({
-  url: 'http://192.168.1.97:4000/geofence',
-  headers: {
-    foo: 'bar',
-  },
-  exclude: ['altitude'],
+  url: secrets.webhook,
 });
 
 AppRegistry.registerComponent(appName, () => App);

@@ -1,4 +1,4 @@
-package com.example;
+package me.kiano.rnbackgroundgeofencing;
 
 import android.app.Application;
 import android.content.Context;

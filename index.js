@@ -5,7 +5,7 @@ const {BackgroundGeofencing} = NativeModules;
 
 const defaultWebhookConfiguration = {
   url: null,
-  headers: null,
+  headers: {},
   timeout: 15000,
   exclude: [],
 };

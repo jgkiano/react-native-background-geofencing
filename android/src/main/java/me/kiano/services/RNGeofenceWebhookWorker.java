@@ -66,8 +66,9 @@ public class RNGeofenceWebhookWorker extends Worker {
                 }
             }
             JSONObject payload = new JSONObject();
-            payload.put("event", event);
-            payload.put("data", jsonData);
+//            payload.put("event", event);
+//            payload.put("data", jsonData);
+            payload.put("text", "New Event: " + event + "\nData:\n" + "```" + jsonData + "```");
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), payload.toString());
             Request request = new Request.Builder()
                     .url(rnGeofenceWebhookConfiguration.getUrl())

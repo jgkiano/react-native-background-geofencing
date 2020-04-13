@@ -41,3 +41,7 @@ buck-out/
 \.buckd/
 *.keystore
 secrets.json
+index.android.bundle
+
+*.bundle
+index.android.bundle
