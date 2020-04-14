@@ -1,12 +1,14 @@
 package me.kiano.services;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -65,10 +67,53 @@ public class RNGeofenceWebhookWorker extends Worker {
                     jsonData.remove(item);
                 }
             }
+            JSONObject geofenceEventData = new JSONObject(data);
             JSONObject payload = new JSONObject();
-//            payload.put("event", event);
-//            payload.put("data", jsonData);
-            payload.put("text", "New Event: " + event + "\nData:\n" + "```" + jsonData + "```");
+            JSONArray transits = new JSONArray();
+            JSONObject transit = new JSONObject();
+
+            if (geofenceEventData.has("geofenceIds")) {
+                transit.put("ids", geofenceEventData.getJSONArray("geofenceIds"));
+            }
+            if (geofenceEventData.has("time")) {
+                transit.put("transition_date", geofenceEventData.getLong("time"));
+            }
+            if (geofenceEventData.has("provider")) {
+                transit.put("geopoint_provider", geofenceEventData.get("provider"));
+            }
+            if (geofenceEventData.has("lat") && geofenceEventData.has("lng")) {
+                JSONObject geoPoint = new JSONObject();
+                geoPoint.put("lat", geofenceEventData.getDouble("lat"));
+                geoPoint.put("lon", geofenceEventData.getDouble("lng"));
+                transit.put("geo_point", geoPoint);
+            }
+            if(geofenceEventData.has("accuracy")) {
+                transit.put("accuracy", (float) geofenceEventData.getDouble("accuracy"));
+            }
+            if (event.equals("GEOFENCE_TRANSITION_ENTER")) {
+                transit.put("transition_event",  "enter");
+            }
+            if (event.equals("GEOFENCE_TRANSITION_ERROR")) {
+                transit.put("transition_event",  "error");
+            }
+            if (event.equals("GEOFENCE_TRANSITION_EXIT")) {
+                transit.put("transition_event",  "exit");
+            }
+            if (event.equals("GEOFENCE_TRANSITION_DWELL")) {
+                transit.put("transition_event",  "dwell");
+            }
+            if (event.equals("GEOFENCE_TRANSITION_UNKNOWN")) {
+                transit.put("transition_event",  "unknown");
+            }
+            transit.put("geo_point_source", "geofence");
+            transit.put("device_os_name", "android");
+            transit.put("device_os_version", Build.VERSION.RELEASE);
+            transit.put("device_manufacturer", Build.MANUFACTURER);
+            transit.put("device_model", Build.MODEL);
+            transits.put(transit);
+            payload.put("transits", transits);
+            Log.v(TAG, "Sending data: ");
+            Log.v(TAG, payload.toString());
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), payload.toString());
             Request request = new Request.Builder()
                     .url(rnGeofenceWebhookConfiguration.getUrl())
