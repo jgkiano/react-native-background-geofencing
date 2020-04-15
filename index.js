@@ -36,13 +36,13 @@ export const configureJSTask = (jsTakConfig = {}) => {
   }
 };
 
-export const configureWebhook = (webhookConfig = {}) => {
+export const configureWebhook = async (webhookConfig = {}) => {
   if (
     Platform.OS === 'android' &&
     typeof webhookConfig === 'object' &&
     typeof webhookConfig.url === 'string'
   ) {
-    BackgroundGeofencing.configureWebhook({
+    return await BackgroundGeofencing.configureWebhook({
       ...defaultWebhookConfiguration,
       ...webhookConfig,
     });
