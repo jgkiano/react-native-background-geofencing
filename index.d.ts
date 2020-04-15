@@ -65,7 +65,9 @@ export interface BackgroundGeofencing {
 
 export function configureJSTask(jsTakConfig: RNGeofenceJSTaskConfig): void;
 
-export function configureWebhook(webhookConfig: RNGeofenceWebhookConfig): void;
+export function configureWebhook(
+  webhookConfig: RNGeofenceWebhookConfig,
+): Promise<boolean | void>;
 
 declare const RNBackgroundGeofencing: BackgroundGeofencing;
 
