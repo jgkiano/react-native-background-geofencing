@@ -38,7 +38,9 @@ export interface RNGeofenceJSTaskConfig {
 
 export interface RNGeofenceWebhookConfig {
   url: string;
-  headers?: Array<{[key: string]: any}>;
+  headers?: {
+    [key: string]: any;
+  };
   timeout?: number;
   exclude?: Array<string>;
 }
