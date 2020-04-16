@@ -31,7 +31,12 @@ export const configureJSTask = (jsTakConfig = {}) => {
     BackgroundGeofencing.configureNotification(notification);
   }
 
-  if (typeof task === 'function') {
+  if (
+    typeof task === 'function' &&
+    typeof notification === 'object' &&
+    typeof notification.title === 'string' &&
+    typeof notification.text === 'string'
+  ) {
     AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => task);
   }
 };
