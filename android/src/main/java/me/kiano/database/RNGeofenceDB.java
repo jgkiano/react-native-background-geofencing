@@ -120,6 +120,15 @@ public class RNGeofenceDB {
         }
     }
 
+    public boolean hasNotificationConfiguration() {
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            return db.exists(NOTIFICATION_CONFIG_KEY);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public RNNotification getNotification () throws JSONException, SnappydbException {
         try {
             DB db = DBFactory.open(context, DB_NAME);

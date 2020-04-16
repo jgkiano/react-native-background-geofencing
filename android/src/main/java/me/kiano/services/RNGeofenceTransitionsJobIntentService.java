@@ -62,19 +62,21 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
             Log.v(TAG, "Geofence work request queued up");
         }
 
-        Intent service = new Intent(getApplicationContext(), RNGeoFenceEventJavaScriptTaskService.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("event", rnGeofenceData.getEventName());
-        bundle.putString("data", rnGeofenceData.getEventData());
-        Log.v(TAG, "Geofence transition: " + rnGeofenceData.getEventName());
-        Log.v(TAG, rnGeofenceData.getEventData());
-        service.putExtras(bundle);
-        if (!isAppOnForeground(getApplicationContext()) && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            getApplicationContext().startForegroundService(service);
-        } else {
-            getApplicationContext().startService(service);
+        if (rnGeofenceDB.hasNotificationConfiguration()) {
+            Intent service = new Intent(getApplicationContext(), RNGeoFenceEventJavaScriptTaskService.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("event", rnGeofenceData.getEventName());
+            bundle.putString("data", rnGeofenceData.getEventData());
+            Log.v(TAG, "Geofence transition: " + rnGeofenceData.getEventName());
+            Log.v(TAG, rnGeofenceData.getEventData());
+            service.putExtras(bundle);
+            if (!isAppOnForeground(getApplicationContext()) && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getApplicationContext().startForegroundService(service);
+            } else {
+                getApplicationContext().startService(service);
+            }
+            HeadlessJsTaskService.acquireWakeLockNow(getApplicationContext());
         }
-        HeadlessJsTaskService.acquireWakeLockNow(getApplicationContext());
     }
 
     private boolean isAppOnForeground(Context context) {
