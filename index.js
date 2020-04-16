@@ -23,20 +23,13 @@ export const configureJSTask = (jsTakConfig = {}) => {
 
   const task = jsTakConfig.task || null;
 
-  if (typeof notification === 'object') {
+  if (typeof notification === 'object' && typeof task === 'function') {
     const {title, text} = notification;
     if (typeof title !== 'string' || typeof text !== 'string') {
       throw new Error('invalid notification configuration provided');
+    } else {
+      BackgroundGeofencing.configureNotification(notification);
     }
-    BackgroundGeofencing.configureNotification(notification);
-  }
-
-  if (
-    typeof task === 'function' &&
-    typeof notification === 'object' &&
-    typeof notification.title === 'string' &&
-    typeof notification.text === 'string'
-  ) {
     AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => task);
   }
 };
