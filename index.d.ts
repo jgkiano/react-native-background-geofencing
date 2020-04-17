@@ -18,19 +18,29 @@ export enum RNGeofenceEvent {
   ERROR = 'ERROR',
 }
 
+interface RNBackgroundGeofenceEventBaseData {
+  geofenceIds: Array<string>;
+}
+
+export interface RNBackgroundGeofenceEventData
+  extends RNBackgroundGeofenceEventBaseData {
+  accuracy?: number;
+  altitude?: number;
+  bearing?: number;
+  time?: number;
+  provider?: number;
+  lat?: number;
+  lng?: number;
+}
+
+export interface RNBackgroundGeofenceEventErrorData
+  extends RNBackgroundGeofenceEventBaseData {
+  errorMessage?: string;
+}
+
 export interface RNBackgroundGeofenceEvent {
   event: RNBackgroundGeofenceEventName;
-  data: {
-    accuracy?: number;
-    altitude?: number;
-    bearing?: number;
-    time?: number;
-    provider?: number;
-    lat?: number;
-    lng?: number;
-    geofenceIds: Array<string>;
-    errorMessage?: string;
-  };
+  data: RNBackgroundGeofenceEventData | RNBackgroundGeofenceEventErrorData;
 }
 
 export type RNGeofenceJSTask = (
