@@ -1,4 +1,5 @@
 import Repository from './Repository';
+import {RNGeofenceEvent} from 'react-native-background-geofencing';
 
 export default async function task({event, data}) {
   console.log('--client--');
@@ -7,15 +8,20 @@ export default async function task({event, data}) {
   console.log(data);
   console.log(typeof data);
   console.log('----------');
+  if (event === RNGeofenceEvent.EXIT) {
+    console.log('bye kid');
+  }
+  if (event === RNGeofenceEvent.ENTER) {
+    console.log('welcome kid');
+  }
   try {
     const repo = new Repository();
-    const locationData = JSON.parse(data);
-    if (locationData.geofenceIds && locationData.geofenceIds.length) {
+    if (data.geofenceIds && data.geofenceIds.length) {
       const promises = [];
-      locationData.geofenceIds.forEach(id => {
+      data.geofenceIds.forEach(id => {
         promises.push(
           repo.addGeofenceEvent(id, event, {
-            ...locationData,
+            ...data,
             geofenceIds: undefined,
           }),
         );
