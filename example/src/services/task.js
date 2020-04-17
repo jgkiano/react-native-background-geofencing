@@ -1,12 +1,10 @@
 import Repository from './Repository';
 import {RNGeofenceEvent} from 'react-native-background-geofencing';
 
-export default async function task({event, data}) {
+export default async function({event, data}) {
   console.log('--client--');
   console.log(event);
-  console.log(typeof event);
   console.log(data);
-  console.log(typeof data);
   console.log('----------');
   if (event === RNGeofenceEvent.EXIT) {
     console.log('bye kid');
