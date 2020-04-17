@@ -3,30 +3,49 @@
 // Definitions by: Kiano (@jgkiano)
 // Definitions: https://github.com/jgkiano/react-native-background-geofencing/blob/master/index.d.ts
 
-export type RNGeofenceEvent =
-  | 'GEOFENCE_TRANSITION_ENTER'
-  | 'GEOFENCE_TRANSITION_EXIT'
-  | 'GEOFENCE_TRANSITION_DWELL'
-  | 'GEOFENCE_TRANSITION_UNKNOWN'
-  | 'GEOFENCE_TRANSITION_ERROR';
+export type RNBackgroundGeofenceEventName =
+  | 'ENTER'
+  | 'EXIT'
+  | 'DWELL'
+  | 'UNKNOWN'
+  | 'ERROR';
 
-export interface RNGeofenceEventData {
-  event: RNGeofenceEvent;
-  data: {
-    accuracy?: number;
-    altitude?: number;
-    bearing?: number;
-    time?: number;
-    provider?: number;
-    lat?: number;
-    lng?: number;
-    geofenceIds?: Array<string>;
-  };
+export enum RNGeofenceEvent {
+  ENTER = 'ENTER',
+  EXIT = 'EXIT',
+  DWELL = 'DWELL',
+  UNKNOWN = 'UNKNOWN',
+  ERROR = 'ERROR',
+}
+
+interface RNBackgroundGeofenceEventBaseData {
+  geofenceIds: Array<string>;
+}
+
+export interface RNBackgroundGeofenceEventData
+  extends RNBackgroundGeofenceEventBaseData {
+  accuracy?: number;
+  altitude?: number;
+  bearing?: number;
+  time?: number;
+  provider?: number;
+  lat?: number;
+  lng?: number;
+}
+
+export interface RNBackgroundGeofenceEventErrorData
+  extends RNBackgroundGeofenceEventBaseData {
+  errorMessage?: string;
+}
+
+export interface RNBackgroundGeofenceEvent {
+  event: RNBackgroundGeofenceEventName;
+  data: RNBackgroundGeofenceEventData | RNBackgroundGeofenceEventErrorData;
 }
 
 export type RNGeofenceJSTask = (
-  geofenceEvent: RNGeofenceEventData,
-) => Promise<any>;
+  geofenceEvent: RNBackgroundGeofenceEvent,
+) => any;
 
 export interface RNGeofenceJSTaskConfig {
   task: RNGeofenceJSTask;

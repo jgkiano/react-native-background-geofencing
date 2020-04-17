@@ -10,6 +10,22 @@ const defaultWebhookConfiguration = {
   exclude: [],
 };
 
+const RNGeofenceEventNameMap = {
+  GEOFENCE_TRANSITION_ENTER: 'ENTER',
+  GEOFENCE_TRANSITION_EXIT: 'EXIT',
+  GEOFENCE_TRANSITION_DWELL: 'DWELL',
+  GEOFENCE_TRANSITION_UNKNOWN: 'UNKNOWN',
+  GEOFENCE_TRANSITION_ERROR: 'ERROR',
+};
+
+export const RNGeofenceEvent = {
+  ENTER: 'ENTER',
+  EXIT: 'EXIT',
+  DWELL: 'DWELL',
+  UNKNOWN: 'UNKNOWN',
+  ERROR: 'ERROR',
+};
+
 export const configureJSTask = (jsTakConfig = {}) => {
   if (Platform.OS !== 'android') {
     return;
@@ -30,7 +46,18 @@ export const configureJSTask = (jsTakConfig = {}) => {
     } else {
       BackgroundGeofencing.configureNotification(notification);
     }
-    AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => task);
+    AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => {
+      return async ({event, data}) => {
+        try {
+          await task({
+            event: RNGeofenceEventNameMap[event],
+            data: JSON.parse(data),
+          });
+        } catch (error) {
+          console.error(`[RNBackgroundGeofencing]`, error);
+        }
+      };
+    });
   }
 };
 
