@@ -31,30 +31,16 @@ public class RNDeviceRestartJobIntentService extends JobIntentService {
         ArrayList<RNGeofence> storedGeofences = db.getAllGeofences();
         Log.v(TAG, "RNDeviceRestartJobIntentService work started: " + storedGeofences.size());
 
-        final Handler handler = new Handler(Looper.getMainLooper());
-
         for (RNGeofence storedGeofence : storedGeofences) {
             storedGeofence.start(false, new RNGeofenceHandler() {
                 @Override
                 public void onSuccess(final String geofenceId) {
                     Log.v(TAG, "Geofence successfully reinitialised: " + geofenceId);
-                    handler.post(new Runnable() {
-                        public void run() {
-                            Toast.makeText(getApplicationContext(),
-                                    "Geofence successfully reinitialized: " + geofenceId, Toast.LENGTH_LONG).show();
-                        }
-                    });
                 }
 
                 @Override
                 public void onError(final String geofenceId, Exception e) {
                     Log.v(TAG, "Geofence FAILED reinitialisation: " + geofenceId);
-                    handler.post(new Runnable() {
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), "Geofence reinitialization FAILED: " + geofenceId,
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    });
                     Log.e(TAG, e.getMessage());
                 }
             });
