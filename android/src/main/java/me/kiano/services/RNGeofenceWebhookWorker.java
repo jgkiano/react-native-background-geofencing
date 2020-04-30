@@ -88,7 +88,7 @@ public class RNGeofenceWebhookWorker extends Worker {
                 transit.put("geo_point", geoPoint);
             }
             if(geofenceEventData.has("accuracy")) {
-                transit.put("accuracy", (float) geofenceEventData.getDouble("accuracy"));
+                transit.put("gps_accuracy", (float) geofenceEventData.getDouble("accuracy"));
             }
             if (event.equals("GEOFENCE_TRANSITION_ENTER")) {
                 transit.put("transition_event",  "enter");
