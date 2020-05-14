@@ -12,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
@@ -39,8 +40,7 @@ public class RNGeofenceWebhookWorker extends Worker {
             httpClient = new OkHttpClient.Builder()
                     .connectTimeout(rnGeofenceWebhookConfiguration.getTimeout(), TimeUnit.MILLISECONDS)
                     .writeTimeout(rnGeofenceWebhookConfiguration.getTimeout(), TimeUnit.MILLISECONDS)
-                    .readTimeout(rnGeofenceWebhookConfiguration.getTimeout(), TimeUnit.MILLISECONDS)
-                    .build();
+                    .readTimeout(rnGeofenceWebhookConfiguration.getTimeout(), TimeUnit.MILLISECONDS).build();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
@@ -87,29 +87,39 @@ public class RNGeofenceWebhookWorker extends Worker {
                 geoPoint.put("lon", geofenceEventData.getDouble("lng"));
                 transit.put("geo_point", geoPoint);
             }
-            if(geofenceEventData.has("accuracy")) {
+            if (geofenceEventData.has("accuracy")) {
                 transit.put("gps_accuracy", (float) geofenceEventData.getDouble("accuracy"));
             }
             if (event.equals("GEOFENCE_TRANSITION_ENTER")) {
-                transit.put("transition_event",  "enter");
+                transit.put("transition_event", "enter");
             }
             if (event.equals("GEOFENCE_TRANSITION_ERROR")) {
-                transit.put("transition_event",  "error");
+                transit.put("transition_event", "error");
             }
             if (event.equals("GEOFENCE_TRANSITION_EXIT")) {
-                transit.put("transition_event",  "exit");
+                transit.put("transition_event", "exit");
             }
             if (event.equals("GEOFENCE_TRANSITION_DWELL")) {
-                transit.put("transition_event",  "dwell");
+                transit.put("transition_event", "dwell");
             }
             if (event.equals("GEOFENCE_TRANSITION_UNKNOWN")) {
-                transit.put("transition_event",  "unknown");
+                transit.put("transition_event", "unknown");
             }
             transit.put("geo_point_source", "geofence");
             transit.put("device_os_name", "android");
             transit.put("device_os_version", Build.VERSION.RELEASE);
             transit.put("device_manufacturer", Build.MANUFACTURER);
             transit.put("device_model", Build.MODEL);
+
+            if (rnGeofenceWebhookConfiguration.getExtraHashMap() != null) {
+                HashMap<String, Object> extra = rnGeofenceWebhookConfiguration.getExtraHashMap();
+                Iterator eIterator = extra.entrySet().iterator();
+                while (eIterator.hasNext()) {
+                    HashMap.Entry pair = (HashMap.Entry)eIterator.next();
+                    transit.put((String) pair.getKey(), pair.getValue());
+                }
+            }
+
             transits.put(transit);
             payload.put("transits", transits);
             Log.v(TAG, "Sending data: ");
