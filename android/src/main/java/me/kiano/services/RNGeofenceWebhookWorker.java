@@ -116,7 +116,7 @@ public class RNGeofenceWebhookWorker extends Worker {
                 Iterator eIterator = extra.entrySet().iterator();
                 while (eIterator.hasNext()) {
                     HashMap.Entry pair = (HashMap.Entry)eIterator.next();
-                    transit.put((String) pair.getKey(), pair.getValue());
+                    payload.put((String) pair.getKey(), pair.getValue());
                 }
             }
 
