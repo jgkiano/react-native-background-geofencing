@@ -18,8 +18,11 @@ configureJSTask({
 
 configureWebhook({
   url: secrets.webhook,
-  extra: {
-    foo: 'bar',
+  meta: {
+    lib: {
+      name: 'foo',
+      version: 'bar',
+    },
   },
 });
 
