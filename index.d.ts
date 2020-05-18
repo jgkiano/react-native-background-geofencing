@@ -68,7 +68,7 @@ export interface RNGeofenceWebhookConfig {
   };
   timeout?: number;
   exclude?: Array<string>;
-  extra?: {
+  meta?: {
     [key: string]: any;
   };
 }

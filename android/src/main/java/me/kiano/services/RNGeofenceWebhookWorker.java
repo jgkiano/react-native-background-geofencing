@@ -111,13 +111,8 @@ public class RNGeofenceWebhookWorker extends Worker {
             transit.put("device_manufacturer", Build.MANUFACTURER);
             transit.put("device_model", Build.MODEL);
 
-            if (rnGeofenceWebhookConfiguration.getExtraHashMap() != null) {
-                HashMap<String, Object> extra = rnGeofenceWebhookConfiguration.getExtraHashMap();
-                Iterator eIterator = extra.entrySet().iterator();
-                while (eIterator.hasNext()) {
-                    HashMap.Entry pair = (HashMap.Entry)eIterator.next();
-                    payload.put((String) pair.getKey(), pair.getValue());
-                }
+            if (rnGeofenceWebhookConfiguration.getMeta() != null) {
+                payload.put("meta", rnGeofenceWebhookConfiguration.getMeta());
             }
 
             transits.put(transit);
