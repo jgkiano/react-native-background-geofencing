@@ -26,6 +26,12 @@ export const RNGeofenceEvent = {
   ERROR: 'ERROR',
 };
 
+export const RNGeofenceTransitionTypes = {
+  enter: 'enter',
+  exit: 'exit',
+  dwell: 'dwell',
+};
+
 export const configureJSTask = (jsTakConfig = {}) => {
   if (Platform.OS !== 'android') {
     return;
@@ -80,11 +86,19 @@ export default {
     const defaults = {
       radius: 150,
       expiration: -1,
-      notificationResponsiveness: 0,
-      loiteringDelay: 0,
-      setDwellTransitionType: false,
       registerOnDeviceRestart: false,
-      setInitialTriggers: true,
+      loiteringDelay: 30 * 60 * 1000, // 30 min loitering delay
+      notificationResponsiveness: 5 * 60 * 1000, // 5 min notification responsiveness
+      transitionTypes: [
+        RNGeofenceTransitionTypes.enter,
+        RNGeofenceTransitionTypes.exit,
+        RNGeofenceTransitionTypes.dwell,
+      ],
+      initialTriggerTransitionTypes: [
+        RNGeofenceTransitionTypes.enter,
+        RNGeofenceTransitionTypes.exit,
+        RNGeofenceTransitionTypes.dwell,
+      ],
     };
     try {
       if (!id || !lat || !lng) {

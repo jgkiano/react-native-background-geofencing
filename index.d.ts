@@ -18,6 +18,12 @@ export enum RNGeofenceEvent {
   ERROR = 'ERROR',
 }
 
+export enum RNGeofenceTransitionTypes {
+  enter = 'enter',
+  exit = 'exit',
+  dwell = 'dwell',
+}
+
 interface RNBackgroundGeofenceEventBaseData {
   geofenceIds: Array<string>;
 }
@@ -62,7 +68,9 @@ export interface RNGeofenceWebhookConfig {
   };
   timeout?: number;
   exclude?: Array<string>;
-  extra?: Object;
+  extra?: {
+    [key: string]: any;
+  };
 }
 
 export interface RNGeofence {
@@ -73,9 +81,9 @@ export interface RNGeofence {
   expiration?: number;
   notificationResponsiveness?: number;
   loiteringDelay?: number;
-  setDwellTransitionType?: boolean;
   registerOnDeviceRestart?: boolean;
-  setInitialTriggers?: boolean;
+  transitionTypes?: Array<'enter' | 'exit' | 'dwell'>;
+  initialTriggerTransitionTypes?: Array<'enter' | 'exit' | 'dwell'>;
 }
 
 export interface BackgroundGeofencing {
