@@ -21,7 +21,7 @@ public class RNGeofenceWebhookConfiguration {
     private long timeout;
     private ArrayList<Object> exclude;
     private HashMap<String, Object> headersHashMap;
-    private JSONObject extra;
+    private JSONObject meta;
     private long DEFAULT_TIMEOUT = 15000;
 
     public RNGeofenceWebhookConfiguration(ReadableMap configuration) throws JSONException {
@@ -29,13 +29,13 @@ public class RNGeofenceWebhookConfiguration {
         headersHashMap = configuration.hasKey("headers") ? configuration.getMap("headers").toHashMap() : new HashMap<String, Object>();
         timeout = configuration.hasKey("timeout") ? configuration.getInt("timeout") : DEFAULT_TIMEOUT;
         exclude = configuration.hasKey("exclude") ? configuration.getArray("exclude").toArrayList() : new ArrayList<>();
-        extra = configuration.hasKey("extra") ? new JSONObject(configuration.getMap("extra").toHashMap()) : null;
+        meta = configuration.hasKey("meta") ? new JSONObject(configuration.getMap("meta").toHashMap()) : null;
     }
 
     public RNGeofenceWebhookConfiguration (JSONObject configuration) throws JSONException {
         url = configuration.has("url") ? configuration.getString("url") : null;
         timeout = configuration.has("timeout") ? configuration.getLong("timeout") : DEFAULT_TIMEOUT;
-        extra = configuration.has("extra") ? configuration.getJSONObject("extra") : null;
+        meta = configuration.has("meta") ? configuration.getJSONObject("meta") : null;
         headersHashMap = new HashMap<>();
         exclude = new ArrayList<>();
         JSONArray excludeJSONArray = configuration.has("exclude") ? configuration.getJSONArray("exclude") : new JSONArray();
@@ -73,9 +73,9 @@ public class RNGeofenceWebhookConfiguration {
         jsonObject.put("headers", new JSONObject(headersHashMap));
         jsonObject.put("exclude", new JSONArray(exclude));
         jsonObject.put("timeout", timeout);
-        jsonObject.put("extra", extra);
-        if (extra != null) {
-            jsonObject.put("extra", extra);
+        jsonObject.put("meta", meta);
+        if (meta != null) {
+            jsonObject.put("meta", meta);
         }
         return  jsonObject.toString();
     }
@@ -97,7 +97,7 @@ public class RNGeofenceWebhookConfiguration {
         return headerBuilder.build();
     }
 
-    public JSONObject getExtra() {
-        return extra;
+    public JSONObject getMeta() {
+        return meta;
     }
 }
