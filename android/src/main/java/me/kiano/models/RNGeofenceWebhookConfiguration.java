@@ -21,42 +21,32 @@ public class RNGeofenceWebhookConfiguration {
     private long timeout;
     private ArrayList<Object> exclude;
     private HashMap<String, Object> headersHashMap;
-    private HashMap<String, Object> extraHashMap;
+    private JSONObject meta;
     private long DEFAULT_TIMEOUT = 15000;
 
-    public RNGeofenceWebhookConfiguration(ReadableMap configuration) {
+    public RNGeofenceWebhookConfiguration(ReadableMap configuration) throws JSONException {
         url = configuration.hasKey("url") ? configuration.getString("url") : null;
         headersHashMap = configuration.hasKey("headers") ? configuration.getMap("headers").toHashMap() : new HashMap<String, Object>();
         timeout = configuration.hasKey("timeout") ? configuration.getInt("timeout") : DEFAULT_TIMEOUT;
         exclude = configuration.hasKey("exclude") ? configuration.getArray("exclude").toArrayList() : new ArrayList<>();
-        extraHashMap = configuration.hasKey("extra") ? configuration.getMap("extra").toHashMap() : null;
+        meta = configuration.hasKey("meta") ? new JSONObject(configuration.getMap("meta").toHashMap()) : null;
     }
 
     public RNGeofenceWebhookConfiguration (JSONObject configuration) throws JSONException {
         url = configuration.has("url") ? configuration.getString("url") : null;
         timeout = configuration.has("timeout") ? configuration.getLong("timeout") : DEFAULT_TIMEOUT;
+        meta = configuration.has("meta") ? configuration.getJSONObject("meta") : null;
         headersHashMap = new HashMap<>();
-        exclude = new ArrayList<Object>();
-        extraHashMap = new HashMap<>();
+        exclude = new ArrayList<>();
         JSONArray excludeJSONArray = configuration.has("exclude") ? configuration.getJSONArray("exclude") : new JSONArray();
         JSONObject headersJSONObject = configuration.has("headers") ? configuration.getJSONObject("headers") : new JSONObject();
-        JSONObject extraJSONObject = configuration.has("extra") ? configuration.getJSONObject("extra") : null;
         Iterator<String> hIterator = headersJSONObject.keys();
-        Iterator<String> eIterator = extraJSONObject.keys();
         while(hIterator.hasNext()) {
             String key = hIterator.next();
             headersHashMap.put(key, headersJSONObject.getString(key));
         }
         for (int i = 0; i < excludeJSONArray.length(); i++) {
             exclude.add(excludeJSONArray.getString(i));
-        }
-        if (extraJSONObject == null) {
-            extraHashMap = null;
-        } else {
-            while(eIterator.hasNext()) {
-                String key = eIterator.next();
-                extraHashMap.put(key, extraJSONObject.getString(key));
-            }
         }
     }
 
@@ -83,8 +73,9 @@ public class RNGeofenceWebhookConfiguration {
         jsonObject.put("headers", new JSONObject(headersHashMap));
         jsonObject.put("exclude", new JSONArray(exclude));
         jsonObject.put("timeout", timeout);
-        if (extraHashMap != null) {
-            jsonObject.put("extra", new JSONObject(extraHashMap));
+        jsonObject.put("meta", meta);
+        if (meta != null) {
+            jsonObject.put("meta", meta);
         }
         return  jsonObject.toString();
     }
@@ -106,7 +97,7 @@ public class RNGeofenceWebhookConfiguration {
         return headerBuilder.build();
     }
 
-    public HashMap<String, Object> getExtraHashMap() {
-        return extraHashMap;
+    public JSONObject getMeta() {
+        return meta;
     }
 }
