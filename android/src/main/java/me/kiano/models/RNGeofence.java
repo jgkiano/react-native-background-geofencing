@@ -13,6 +13,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,6 +41,8 @@ public class RNGeofence {
     private GeofencingClient geofencingClient;
     private PendingIntent geofencePendingIntent;
     private final String TAG = "RNGeofence";
+    private final ArrayList<Object> transitionTypes;
+    private final ArrayList<Object> initialTriggerTransitionTypes;
 
     public static void remove(Context context,String id) {
         GeofencingClient geofencingClient = LocationServices.getGeofencingClient(context);
@@ -49,22 +52,6 @@ public class RNGeofence {
         geofencingClient.removeGeofences(ids);
         rnGeofenceDB.removeGeofence(id);
         Log.v("RNGeofence", "Geofence successfully removed from client and DB :)");
-    }
-
-    public RNGeofence (Context context, JSONObject geoFence) throws JSONException {
-        this.context = context;
-        id = geoFence.getString("id");
-        lat = geoFence.getDouble("lat");
-        lng = geoFence.getDouble("lng");
-        radius = (float) geoFence.getDouble("radius");
-        expiration = geoFence.getLong("expiration");
-        expirationDate = geoFence.getLong("expirationDate");
-        notificationResponsiveness = geoFence.getInt("notificationResponsiveness");
-        loiteringDelay = geoFence.getInt("loiteringDelay");
-        dwellTransitionType = geoFence.getInt("dwellTransitionType");
-        registerOnDeviceRestart = geoFence.getBoolean("registerOnDeviceRestart");
-        setInitialTriggers = geoFence.getBoolean("setInitialTriggers");
-        setUpRNGeofence();
     }
 
     public RNGeofence(Context context, ReadableMap geoFence) {
@@ -80,6 +67,35 @@ public class RNGeofence {
         expirationDate = expiration > Geofence.NEVER_EXPIRE ? System.currentTimeMillis() + expiration : Geofence.NEVER_EXPIRE;
         registerOnDeviceRestart = geoFence.getBoolean("registerOnDeviceRestart");
         setInitialTriggers = geoFence.getBoolean("setInitialTriggers");
+        transitionTypes = geoFence.getArray("transitionTypes").toArrayList();
+        initialTriggerTransitionTypes = geoFence.getArray("initialTriggerTransitionTypes").toArrayList();
+        setUpRNGeofence();
+    }
+
+    public RNGeofence (Context context, JSONObject geoFence) throws JSONException {
+        this.context = context;
+        Log.v(TAG, geoFence.toString(2));
+        id = geoFence.getString("id");
+        lat = geoFence.getDouble("lat");
+        lng = geoFence.getDouble("lng");
+        radius = (float) geoFence.getDouble("radius");
+        expiration = geoFence.getLong("expiration");
+        expirationDate = geoFence.getLong("expirationDate");
+        notificationResponsiveness = geoFence.getInt("notificationResponsiveness");
+        loiteringDelay = geoFence.getInt("loiteringDelay");
+        dwellTransitionType = geoFence.getInt("dwellTransitionType");
+        registerOnDeviceRestart = geoFence.getBoolean("registerOnDeviceRestart");
+        setInitialTriggers = geoFence.getBoolean("setInitialTriggers");
+        JSONArray transitionTypesJSONArray = geoFence.getJSONArray("transitionTypes");
+        transitionTypes = new ArrayList<>();
+        for (int i = 0; i < transitionTypesJSONArray.length(); i++) {
+            transitionTypes.add(transitionTypesJSONArray.getString(i));
+        }
+        JSONArray initialTriggerTransitionTypesJSONArray = geoFence.getJSONArray("initialTriggerTransitionTypes");
+        initialTriggerTransitionTypes = new ArrayList<>();
+        for (int i = 0; i < initialTriggerTransitionTypesJSONArray.length(); i++) {
+            initialTriggerTransitionTypes.add(initialTriggerTransitionTypesJSONArray.getString(i));
+        }
         setUpRNGeofence();
     }
 
@@ -91,12 +107,15 @@ public class RNGeofence {
     }
 
     private void setUpRNGeofence() {
+        final int enter = transitionTypes.contains("enter") ? Geofence.GEOFENCE_TRANSITION_ENTER : -1;
+        final int exit = transitionTypes.contains("exit") ? Geofence.GEOFENCE_TRANSITION_EXIT : -1;
+        final int dwell = transitionTypes.contains("dwell") ? Geofence.GEOFENCE_TRANSITION_DWELL : -1;
         geofencingClient = LocationServices.getGeofencingClient(context);
         Geofence geofence = new Geofence.Builder()
                 .setRequestId(id)
                 .setCircularRegion(lat, lng, radius)
                 .setExpirationDuration(expiration)
-                .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT | dwellTransitionType)
+                .setTransitionTypes(enter | exit | dwell)
                 .setLoiteringDelay(loiteringDelay)
                 .setNotificationResponsiveness(notificationResponsiveness)
                 .build();
@@ -104,10 +123,11 @@ public class RNGeofence {
     }
 
     private GeofencingRequest getGeofencingRequest() {
+        final int enter = initialTriggerTransitionTypes.contains("enter") ? GeofencingRequest.INITIAL_TRIGGER_ENTER : -1;
+        final int exit = initialTriggerTransitionTypes.contains("exit") ? GeofencingRequest.INITIAL_TRIGGER_EXIT : -1;
+        final int dwell = initialTriggerTransitionTypes.contains("dwell") ? GeofencingRequest.INITIAL_TRIGGER_DWELL : -1;
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        if (setInitialTriggers) {
-            builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER | GeofencingRequest.INITIAL_TRIGGER_EXIT | dwellTransitionType);
-        }
+        builder.setInitialTrigger(enter | exit | dwell);
         builder.addGeofences(geofenceList);
         return builder.build();
     }
@@ -164,6 +184,10 @@ public class RNGeofence {
         json.put("dwellTransitionType", dwellTransitionType);
         json.put("registerOnDeviceRestart", registerOnDeviceRestart);
         json.put("setInitialTriggers", setInitialTriggers);
+        JSONArray transitionTypesJSONArray = new JSONArray(transitionTypes);
+        json.put("transitionTypes", transitionTypesJSONArray);
+        JSONArray initialTriggerTransitionTypesJSONArray = new JSONArray(initialTriggerTransitionTypes);
+        json.put("initialTriggerTransitionTypes", initialTriggerTransitionTypesJSONArray);
         Log.v( "RNGeofenceJSON",json.toString(2));
         return json.toString();
     }
