@@ -18,6 +18,9 @@ configureJSTask({
 
 configureWebhook({
   url: secrets.webhook,
+  extra: {
+    foo: 'bar',
+  },
 });
 
 AppRegistry.registerComponent(appName, () => App);
