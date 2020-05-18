@@ -18,6 +18,12 @@ export enum RNGeofenceEvent {
   ERROR = 'ERROR',
 }
 
+export type RNGeofenceTransitionTypes = {
+  enter: 'enter';
+  exit: 'exit';
+  dwell: 'dwell';
+};
+
 interface RNBackgroundGeofenceEventBaseData {
   geofenceIds: Array<string>;
 }
