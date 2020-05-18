@@ -16,6 +16,8 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
 
+import org.json.JSONException;
+
 import me.kiano.interfaces.RNGeofenceHandler;
 import me.kiano.models.RNGeofence;
 import me.kiano.models.RNGeofenceWebhookConfiguration;
@@ -88,9 +90,15 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void configureWebhook (ReadableMap configureWebhook, final Promise promise) {
-        RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration = new RNGeofenceWebhookConfiguration(configureWebhook);
-        rnGeofenceWebhookConfiguration.save(getReactApplicationContext());
-        promise.resolve(true);
+        try {
+            RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration = new RNGeofenceWebhookConfiguration(configureWebhook);
+            rnGeofenceWebhookConfiguration.save(getReactApplicationContext());
+            promise.resolve(true);
+        } catch (JSONException e) {
+            promise.reject("geofence_exception", e.getMessage());
+            e.printStackTrace();
+        }
+
     }
 
     @ReactMethod
