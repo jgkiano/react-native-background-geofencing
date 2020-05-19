@@ -7,6 +7,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import HomeScreen from './src/screens/Home';
 import HistoryScreen from './src/screens/History';
 import LoginScreen from './src/screens/Login';
+import InitScreen from './src/screens/Init';
 
 const Stack = createStackNavigator();
 
@@ -39,6 +40,11 @@ class App extends React.Component {
     return (
       <NavigationContainer>
         <Stack.Navigator>
+          <Stack.Screen
+            options={{header: () => null}}
+            name="Init"
+            component={InitScreen}
+          />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="History" component={HistoryScreen} />
