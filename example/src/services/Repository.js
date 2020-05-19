@@ -3,9 +3,32 @@ import RNBackgroundGeofencing from 'react-native-background-geofencing';
 
 export default class Repository {
   constructor() {
+    this.DB_STORED_USER = '@user';
     this.DB_STORED_GEOFENCE_KEY = '@storedGeofences';
     this.DB_STORED_GEOFENCE_EVENT_PREFIX = '@storedGeofenceEvent:';
   }
+
+  getUser = async () => {
+    try {
+      const user = await AsyncStorage.getItem(this.DB_STORED_USER);
+      if (user) {
+        return JSON.parse(user);
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+  addUser = async user => {
+    try {
+      await AsyncStorage.setItem(this.DB_STORED_USER, JSON.stringify(user));
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   addGeofence = async geofence => {
     try {
