@@ -8,7 +8,7 @@ import HomeGeofences from '../components/HomeGeofences';
 import HomeEmptyState from '../components/HomeEmptyState';
 import ModalBody from '../components/ModalBody';
 
-export default class Home extends React.Component {
+export default class HomeScreen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
