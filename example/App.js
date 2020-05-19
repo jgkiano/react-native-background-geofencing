@@ -6,6 +6,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 
 import HomeScreen from './src/screens/Home';
 import HistoryScreen from './src/screens/History';
+import LoginScreen from './src/screens/Login';
 
 const Stack = createStackNavigator();
 
@@ -38,7 +39,8 @@ class App extends React.Component {
     return (
       <NavigationContainer>
         <Stack.Navigator>
-          <Stack.Screen name="Geofences" component={HomeScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="History" component={HistoryScreen} />
         </Stack.Navigator>
       </NavigationContainer>
