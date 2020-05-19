@@ -10,7 +10,7 @@ export default class InitScreen extends React.Component {
   async componentDidMount() {
     const {navigation} = this.props;
     const user = await this.repo.getUser();
-    await wait(2000);
+    await wait(1500);
     if (user) {
       navigation.dispatch(
         CommonActions.reset({
