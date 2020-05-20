@@ -34,6 +34,7 @@ export class Provider extends React.Component {
     try {
       const geofences = [geofence, ...this.state.geofences];
       this.setState({geofences});
+      await this.repo.addGeofence(geofence);
     } catch (error) {
       throw error;
     }
