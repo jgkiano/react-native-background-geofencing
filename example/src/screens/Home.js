@@ -3,6 +3,8 @@ import {Text} from 'react-native';
 import styled from 'styled-components';
 import FullButton from '../components/FullButton';
 import HomeEmptyState from '../components/HomeEmptyState';
+import HomeGeofenceList from '../components/HomeGeofenceList';
+
 import {withContext} from '../context';
 
 class HomeScreen extends React.Component {
@@ -17,7 +19,7 @@ class HomeScreen extends React.Component {
     if (!geofences.length) {
       return <HomeEmptyState />;
     }
-    return <Text>We have some geofences in state, woop!</Text>;
+    return <HomeGeofenceList geofences={geofences} />;
   };
 
   render() {
