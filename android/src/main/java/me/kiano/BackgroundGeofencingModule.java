@@ -76,10 +76,12 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
                 @Override
                 public void onError(String geofenceId, Exception e) {
                     promise.reject("geofence_exception", "Failed to start geofence service for id: " + rnGeofence.id, e);
+                    e.printStackTrace();
                 }
             });
         } catch (Exception e) {
             promise.reject("geofence_exception", "Failed to start geofence service for id: " + geoFence.getString("id"), e);
+            e.printStackTrace();
         }
     }
 
