@@ -13,7 +13,7 @@ class InitScreen extends React.Component {
     const user = await this.repo.getUser();
     await wait(1500);
     if (user) {
-      context.putUser({user});
+      context.putUser(user);
       this.handleNavigation('Home');
     } else {
       this.handleNavigation('Login');
