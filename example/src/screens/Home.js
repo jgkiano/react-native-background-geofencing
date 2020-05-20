@@ -7,8 +7,8 @@ import {withContext} from '../context';
 
 class HomeScreen extends React.Component {
   handleOnPress = () => {
-    const {navigation, route} = this.props;
-    navigation.navigate('AddGeofence', {user: route.params.user});
+    const {navigation} = this.props;
+    navigation.navigate('AddGeofence');
   };
 
   renderPage = () => {
