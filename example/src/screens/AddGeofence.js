@@ -1,6 +1,8 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
+import {Alert} from 'react-native';
 import styled from 'styled-components';
+import validator from 'validator';
 import CheckBox from '@react-native-community/checkbox';
 import {ScrollView, TouchableOpacity, View} from 'react-native';
 import core from '../services/OkHiCore';
@@ -8,21 +10,130 @@ import OkHiLocationManager from '@okhi/okcollect-manager-react-native';
 import InputItem from '../components/InputItem';
 import FullButton from '../components/FullButton';
 import FullScreenLoader from '../components/FullScreenLoader';
+import {withContext} from '../context';
 
-export default class AddGeofenceScreen extends React.Component {
+class AddGeofenceScreen extends React.Component {
   state = {
+    address: null,
     launchOkHi: false,
-    title: '',
-    subtitle: '',
     id: null,
     lat: null,
     lng: null,
+    registerOnDeviceRestart: true,
     radius: '',
+    title: '',
+    subtitle: '',
     loiteringDelay: '',
     notificationResponsiveness: '',
     expiration: -1,
     transitionTypes: [],
     initialTriggerTransitionTypes: [],
+    error: '',
+  };
+
+  handleSubmit = () => {
+    const {context, navigation} = this.props;
+    const {addGeofence} = context;
+    let {
+      id,
+      lat,
+      lng,
+      radius,
+      loiteringDelay,
+      registerOnDeviceRestart,
+      notificationResponsiveness,
+      expiration,
+      transitionTypes,
+      initialTriggerTransitionTypes,
+      address,
+    } = this.state;
+    radius = validator.toInt(radius);
+    loiteringDelay = validator.toInt(loiteringDelay);
+    notificationResponsiveness = validator.toInt(notificationResponsiveness);
+    expiration =
+      typeof expiration === 'string' ? validator.toInt(expiration) : expiration;
+
+    if (!id || !lat || !lng) {
+      this.setState(
+        {error: 'Please select an OkHi address'},
+        this.handleErrorAlert,
+      );
+      return;
+    }
+
+    if (!radius || radius < 150) {
+      this.setState(
+        {
+          error:
+            'Please specify an appropriate geofence radius. Radius must be greater than 150m',
+        },
+        this.handleErrorAlert,
+      );
+      return;
+    }
+
+    if (!loiteringDelay) {
+      this.setState(
+        {error: 'Please specify an appropriate geofence loitering delay'},
+        this.handleErrorAlert,
+      );
+      return;
+    }
+
+    if (!notificationResponsiveness) {
+      this.setState(
+        {error: 'Please specify an appropriate geofence notification response'},
+        this.handleErrorAlert,
+      );
+      return;
+    }
+
+    if (typeof expiration === 'string' && !validator.isNumeric(expiration)) {
+      this.setState(
+        {error: 'Please specify an appropriate geofence expiration time'},
+        this.handleErrorAlert,
+      );
+      return;
+    }
+
+    if (!transitionTypes.length) {
+      this.setState(
+        {error: 'Please select atleast one geofence transition type'},
+        this.handleErrorAlert,
+      );
+      return;
+    }
+
+    const configuration = {
+      id,
+      lat,
+      lng,
+      radius,
+      loiteringDelay,
+      notificationResponsiveness,
+      registerOnDeviceRestart,
+      expiration,
+      transitionTypes,
+      initialTriggerTransitionTypes,
+    };
+
+    addGeofence({configuration, address});
+    navigation.goBack();
+  };
+
+  handleErrorAlert = () => {
+    const {error} = this.state;
+    Alert.alert(
+      'Hmm, looks like you need to fix something',
+      error,
+      [
+        {
+          text: 'Got it',
+          style: 'cancel',
+        },
+      ],
+      {cancelable: false},
+    );
   };
 
   handleInputChange = (type, text) => {
@@ -31,12 +142,15 @@ export default class AddGeofenceScreen extends React.Component {
     });
   };
 
-  handleOnOkHiError = error => {};
+  handleOnOkHiError = error => {
+    console.log(error);
+  };
 
   handleOnOkHiSuccess = location => {
     const {title, otherInformation, directions, geoPoint, id} = location;
     const {lat, lon} = geoPoint;
     this.setState({
+      address: location,
       launchOkHi: false,
       lng: lon,
       subtitle: directions || otherInformation || null,
@@ -251,8 +365,23 @@ export default class AddGeofenceScreen extends React.Component {
     );
   };
 
+  renderRegisterOnDeviceRestart = () => {
+    const {registerOnDeviceRestart} = this.state;
+    return (
+      <View>
+        <Text>Register on device restart?</Text>
+        <CheckBox
+          value={registerOnDeviceRestart}
+          onValueChange={() =>
+            this.setState({registerOnDeviceRestart: !registerOnDeviceRestart})
+          }
+        />
+      </View>
+    );
+  };
+
   render() {
-    const {user} = this.props.route.params;
+    const {user} = this.props.context;
     const {launchOkHi} = this.state;
     return (
       <Container>
@@ -271,6 +400,9 @@ export default class AddGeofenceScreen extends React.Component {
               {this.renderAddress()}
               <HR />
               {this.renderInputGroups()}
+              <View style={{marginTop: 15, marginHorizontal: 15}}>
+                {this.renderRegisterOnDeviceRestart()}
+              </View>
               <View style={{marginTop: 15, marginHorizontal: 15}}>
                 {this.renderShouldExpire()}
               </View>
@@ -325,3 +457,5 @@ const InputGroup = styled.View`
 const Separator = styled.View`
   margin: 0 5px;
 `;
+
+export default withContext(AddGeofenceScreen);
