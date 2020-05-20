@@ -33,9 +33,7 @@ public class RNGeofence {
     public final long expirationDate;
     public final int notificationResponsiveness;
     public final int loiteringDelay;
-    public final int dwellTransitionType;
     public final boolean registerOnDeviceRestart;
-    public final boolean setInitialTriggers;
     private final Context context;
     private final ArrayList<Geofence> geofenceList = new ArrayList<>();
     private GeofencingClient geofencingClient;
@@ -63,10 +61,8 @@ public class RNGeofence {
         expiration = geoFence.getDouble("expiration") > 0 ? (long) geoFence.getDouble("expiration") : Geofence.NEVER_EXPIRE;
         notificationResponsiveness = geoFence.getInt("notificationResponsiveness");
         loiteringDelay = geoFence.getInt("loiteringDelay");
-        dwellTransitionType = geoFence.getBoolean("setDwellTransitionType") ? Geofence.GEOFENCE_TRANSITION_DWELL : 0;
         expirationDate = expiration > Geofence.NEVER_EXPIRE ? System.currentTimeMillis() + expiration : Geofence.NEVER_EXPIRE;
         registerOnDeviceRestart = geoFence.getBoolean("registerOnDeviceRestart");
-        setInitialTriggers = geoFence.getBoolean("setInitialTriggers");
         transitionTypes = geoFence.getArray("transitionTypes").toArrayList();
         initialTriggerTransitionTypes = geoFence.getArray("initialTriggerTransitionTypes").toArrayList();
         setUpRNGeofence();
@@ -83,9 +79,7 @@ public class RNGeofence {
         expirationDate = geoFence.getLong("expirationDate");
         notificationResponsiveness = geoFence.getInt("notificationResponsiveness");
         loiteringDelay = geoFence.getInt("loiteringDelay");
-        dwellTransitionType = geoFence.getInt("dwellTransitionType");
         registerOnDeviceRestart = geoFence.getBoolean("registerOnDeviceRestart");
-        setInitialTriggers = geoFence.getBoolean("setInitialTriggers");
         JSONArray transitionTypesJSONArray = geoFence.getJSONArray("transitionTypes");
         transitionTypes = new ArrayList<>();
         for (int i = 0; i < transitionTypesJSONArray.length(); i++) {
@@ -181,9 +175,7 @@ public class RNGeofence {
         json.put("expirationDate", expirationDate);
         json.put("notificationResponsiveness", notificationResponsiveness);
         json.put("loiteringDelay", loiteringDelay);
-        json.put("dwellTransitionType", dwellTransitionType);
         json.put("registerOnDeviceRestart", registerOnDeviceRestart);
-        json.put("setInitialTriggers", setInitialTriggers);
         JSONArray transitionTypesJSONArray = new JSONArray(transitionTypes);
         json.put("transitionTypes", transitionTypesJSONArray);
         JSONArray initialTriggerTransitionTypesJSONArray = new JSONArray(initialTriggerTransitionTypes);
