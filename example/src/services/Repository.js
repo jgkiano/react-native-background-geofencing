@@ -32,6 +32,7 @@ export default class Repository {
 
   addGeofence = async geofence => {
     try {
+      geofence.configuration.createdAt = Date.now();
       await RNBackgroundGeofencing.add(geofence.configuration);
       const geofences = (await this.getGeofences()) || [];
       geofences.unshift(geofence);
