@@ -5,13 +5,11 @@ import styled from 'styled-components/native';
 import {CommonActions} from '@react-navigation/native';
 import InputItem from '../components/InputItem';
 import FullButton from '../components/FullButton';
-import manifest from '../../package.json';
 import ErrorBox from '../components/ErrorBox';
-import Repository from '../services/Repository';
+import manifest from '../../package.json';
+import {withContext} from '../context';
 
-export default class LoginScreen extends React.Component {
-  repo = new Repository();
-
+class LoginScreen extends React.Component {
   state = {
     firstName: '',
     lastName: '',
@@ -21,9 +19,9 @@ export default class LoginScreen extends React.Component {
 
   handleNavigation = () => {
     const {firstName, lastName, phone} = this.state;
-    const {navigation} = this.props;
+    const {navigation, context} = this.props;
     const user = {firstName, lastName, phone};
-    this.repo.addUser(user);
+    context.putUser(user);
     navigation.dispatch(
       CommonActions.reset({
         index: 0,
@@ -132,3 +130,5 @@ const SmallText = styled.Text`
   opacity: 0.7;
   color: ${props => props.color || '#424242'};
 `;
+
+export default withContext(LoginScreen);
