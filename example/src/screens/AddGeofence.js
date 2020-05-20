@@ -115,6 +115,7 @@ class AddGeofenceScreen extends React.Component {
       expiration,
       transitionTypes,
       initialTriggerTransitionTypes,
+      createdAt: Date.now(),
     };
 
     addGeofence({configuration, address});
