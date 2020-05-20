@@ -1,19 +1,23 @@
 import React from 'react';
+import {Text} from 'react-native';
 import styled from 'styled-components';
-import Repository from '../services/Repository';
 import FullButton from '../components/FullButton';
 import HomeEmptyState from '../components/HomeEmptyState';
+import {withContext} from '../context';
 
-export default class HomeScreen extends React.Component {
-  repo = new Repository();
-
+class HomeScreen extends React.Component {
   handleOnPress = () => {
     const {navigation, route} = this.props;
     navigation.navigate('AddGeofence', {user: route.params.user});
   };
 
   renderPage = () => {
-    return <HomeEmptyState />;
+    const {context} = this.props;
+    const {geofences} = context;
+    if (!geofences.length) {
+      return <HomeEmptyState />;
+    }
+    return <Text>We have some geofences in state, woop!</Text>;
   };
 
   render() {
@@ -30,3 +34,5 @@ const Container = styled.View`
   flex: 1;
   flex-direction: column;
 `;
+
+export default withContext(HomeScreen);
