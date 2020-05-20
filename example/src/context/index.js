@@ -30,6 +30,10 @@ export class Provider extends React.Component {
     }
   };
 
+  putGeofences = async (geofences = []) => {
+    this.setState({geofences});
+  };
+
   addGeofence = async geofence => {
     try {
       const geofences = [geofence, ...this.state.geofences];
@@ -41,9 +45,10 @@ export class Provider extends React.Component {
   };
 
   render() {
-    const {putUser, addGeofence} = this;
+    const {putUser, addGeofence, putGeofences} = this;
     return (
-      <Context.Provider value={{...this.state, putUser, addGeofence}}>
+      <Context.Provider
+        value={{...this.state, putUser, addGeofence, putGeofences}}>
         {this.props.children}
       </Context.Provider>
     );
