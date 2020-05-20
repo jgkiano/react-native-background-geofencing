@@ -11,9 +11,11 @@ class InitScreen extends React.Component {
   async componentDidMount() {
     const {context} = this.props;
     const user = await this.repo.getUser();
+    const geofences = await this.repo.getGeofences();
     await wait(1500);
     if (user) {
       context.putUser(user);
+      context.putGeofences(geofences);
       this.handleNavigation('Home');
     } else {
       this.handleNavigation('Login');
