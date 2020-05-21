@@ -5,7 +5,7 @@ export default class Repository {
   constructor() {
     this.DB_STORED_USER = '@user';
     this.DB_STORED_GEOFENCE_KEY = '@storedGeofences';
-    this.DB_STORED_GEOFENCE_EVENT_PREFIX = '@storedGeofenceEvent:';
+    this.DB_STORED_GEOFENCE_EVENTS_KEY = '@storedGeofenceEvents';
   }
 
   getUser = async () => {
@@ -65,19 +65,45 @@ export default class Repository {
     }
   };
 
-  getGeofenceEvents = async geofenceId => {
+  addGeofenceEvents = async (events = []) => {
     try {
-      const KEY = `${this.DB_STORED_GEOFENCE_EVENT_PREFIX}${geofenceId}`;
-      let storedGeofenceEvents = await AsyncStorage.getItem(KEY);
-      storedGeofenceEvents = storedGeofenceEvents
-        ? JSON.parse(storedGeofenceEvents)
-        : [];
-      return storedGeofenceEvents;
+      const existingEvents = await this.getGeofenceEvents();
+      const newEvents = [...events, ...existingEvents];
+      await AsyncStorage.setItem(
+        this.DB_STORED_GEOFENCE_EVENTS_KEY,
+        JSON.stringify(newEvents),
+      );
+      console.log('saved geofence events successfully');
     } catch (error) {
-      console.log(error);
-      return [];
+      throw error;
     }
   };
+
+  getGeofenceEvents = async () => {
+    try {
+      let events = await AsyncStorage.getItem(
+        this.DB_STORED_GEOFENCE_EVENTS_KEY,
+      );
+      events = events ? JSON.parse(events) : [];
+      return events;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  // getGeofenceEvents = async geofenceId => {
+  //   try {
+  //     const KEY = `${this.DB_STORED_GEOFENCE_EVENT_PREFIX}${geofenceId}`;
+  //     let storedGeofenceEvents = await AsyncStorage.getItem(KEY);
+  //     storedGeofenceEvents = storedGeofenceEvents
+  //       ? JSON.parse(storedGeofenceEvents)
+  //       : [];
+  //     return storedGeofenceEvents;
+  //   } catch (error) {
+  //     console.log(error);
+  //     return [];
+  //   }
+  // };
 
   // addGeofenceEvent = async (geofenceId, event, data) => {
   //   try {
