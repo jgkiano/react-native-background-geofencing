@@ -42,8 +42,8 @@ export default class ReviewModal extends React.Component {
               mode="dropdown"
               selectedValue={quality}
               onValueChange={value => this.setState({quality: value})}>
-              <Picker.Item label="Good" value={1} />
-              <Picker.Item label="Bad" value={0} />
+              <Picker.Item label="👍 (Good)" value={1} />
+              <Picker.Item label="👎 (Bad)" value={0} />
             </Picker>
           </InputGroup>
           <InputGroup>
