@@ -1,4 +1,5 @@
 import Repository from './Repository';
+import uuid from 'react-native-uuid';
 
 export default async function GeofenceTask({event, data}) {
   try {
@@ -10,6 +11,7 @@ export default async function GeofenceTask({event, data}) {
         ...data,
         id,
         event: event.toLowerCase(),
+        uuid: uuid.v4(),
       };
     });
     await repo.addGeofenceEvents(events);
