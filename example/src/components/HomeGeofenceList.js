@@ -18,8 +18,10 @@ const HomeGeofenceList = ({
       android: TouchableNativeFeedback,
       ios: TouchableOpacity,
     });
+
     const {configuration, address} = geofence;
     const {createdAt} = configuration;
+    const geofenceEvents = events.filter(({id}) => id === configuration.id);
     const {title, otherInformation, directions} = address;
     const subtitle = directions || otherInformation || null;
     const time = moment(createdAt).format(
@@ -27,12 +29,18 @@ const HomeGeofenceList = ({
     );
     return (
       <Touchable onPress={() => onGeofenceSelect(geofence)}>
-        <ItemContainer>
+        <ItemContainer active={geofenceEvents.length > 0}>
           <NotificationBanner />
           <TitleContainer>
             <Title>{title}</Title>
             {subtitle ? <Subtitle>{subtitle}</Subtitle> : null}
             <Subtitle>{time}</Subtitle>
+            {geofenceEvents.length > 0 ? (
+              <NotificationText>
+                You have {geofenceEvents.length} new event
+                {geofenceEvents.length === 1 ? '' : 's'} to review
+              </NotificationText>
+            ) : null}
           </TitleContainer>
         </ItemContainer>
       </Touchable>
