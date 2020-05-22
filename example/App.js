@@ -10,7 +10,8 @@ import HistoryScreen from './src/screens/History';
 import LoginScreen from './src/screens/Login';
 import InitScreen from './src/screens/Init';
 import AddGeofenceScreen from './src/screens/AddGeofence';
-import GeofenceHistory from './src/screens/GeofenceHistory';
+import GeofenceHistoryScreen from './src/screens/GeofenceHistory';
+import GeofenceEventMapScreen from './src/screens/GeofenceEventMap';
 
 const Stack = createStackNavigator();
 
@@ -57,7 +58,14 @@ class App extends React.Component {
               name="AddGeofence"
               component={AddGeofenceScreen}
             />
-            <Stack.Screen name="GeofenceHistory" component={GeofenceHistory} />
+            <Stack.Screen
+              name="GeofenceHistory"
+              component={GeofenceHistoryScreen}
+            />
+            <Stack.Screen
+              name="GeofenceEventMap"
+              component={GeofenceEventMapScreen}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </Provider>
