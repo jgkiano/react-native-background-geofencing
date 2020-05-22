@@ -19,6 +19,11 @@ export class Provider extends React.Component {
   state = {
     user: null,
     geofences: [],
+    events: [],
+  };
+
+  putGeofenceEvents = (events = []) => {
+    this.setState({events});
   };
 
   putUser = async user => {
@@ -45,10 +50,16 @@ export class Provider extends React.Component {
   };
 
   render() {
-    const {putUser, addGeofence, putGeofences} = this;
+    const {putUser, addGeofence, putGeofences, putGeofenceEvents} = this;
     return (
       <Context.Provider
-        value={{...this.state, putUser, addGeofence, putGeofences}}>
+        value={{
+          ...this.state,
+          putUser,
+          addGeofence,
+          putGeofences,
+          putGeofenceEvents,
+        }}>
         {this.props.children}
       </Context.Provider>
     );
