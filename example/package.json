@@ -29,6 +29,7 @@
     "react-native-background-geofencing": "file:../",
     "react-native-device-info": "^5.5.8",
     "react-native-gesture-handler": "^1.6.1",
+    "react-native-maps": "0.27.1",
     "react-native-permissions": "^2.0.10",
     "react-native-reanimated": "^1.7.1",
     "react-native-safe-area-context": "^0.7.3",
