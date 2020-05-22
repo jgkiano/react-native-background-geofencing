@@ -13,13 +13,28 @@ class HomeScreen extends React.Component {
     navigation.navigate('AddGeofence');
   };
 
+  handleOnGeofenceSelect = geofence => {
+    const {navigation, context} = this.props;
+    const {events} = context;
+    const geofenceEvents = events.filter(
+      ({id}) => geofence.configuration.id === id,
+    );
+    navigation.navigate('GeofenceHistory', {geofence, events: geofenceEvents});
+  };
+
   renderPage = () => {
     const {context} = this.props;
-    const {geofences} = context;
+    const {geofences, events} = context;
     if (!geofences.length) {
       return <HomeEmptyState />;
     }
-    return <HomeGeofenceList geofences={geofences} />;
+    return (
+      <HomeGeofenceList
+        geofences={geofences}
+        onGeofenceSelect={this.handleOnGeofenceSelect}
+        events={events}
+      />
+    );
   };
 
   render() {
