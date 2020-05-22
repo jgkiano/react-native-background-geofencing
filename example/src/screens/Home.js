@@ -1,5 +1,4 @@
 import React from 'react';
-import {Text} from 'react-native';
 import styled from 'styled-components';
 import FullButton from '../components/FullButton';
 import HomeEmptyState from '../components/HomeEmptyState';
@@ -14,12 +13,8 @@ class HomeScreen extends React.Component {
   };
 
   handleOnGeofenceSelect = geofence => {
-    const {navigation, context} = this.props;
-    const {events} = context;
-    const geofenceEvents = events.filter(
-      ({id}) => geofence.configuration.id === id,
-    );
-    navigation.navigate('GeofenceHistory', {geofence, events: geofenceEvents});
+    const {navigation} = this.props;
+    navigation.navigate('GeofenceHistory', {geofence});
   };
 
   renderPage = () => {
