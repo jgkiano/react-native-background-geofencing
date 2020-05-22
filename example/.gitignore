@@ -60,3 +60,4 @@ buck-out/
 
 *.bundle
 index.android.bundle
+AndroidManifest.xml
