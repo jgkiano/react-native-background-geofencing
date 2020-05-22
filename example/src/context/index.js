@@ -1,6 +1,6 @@
 import React from 'react';
 import Repository from '../services/Repository';
-
+import {createGeofenceEvent} from '../services/Utils';
 export const Context = React.createContext();
 
 export const withContext = Component => {
@@ -20,6 +20,20 @@ export class Provider extends React.Component {
     user: null,
     geofences: [],
     events: [],
+  };
+
+  submitGeofenceEventReview = async (uuid, review) => {
+    let {events} = this.state;
+    const originalEvents = [...events];
+    try {
+      const [event] = events.filter(e => e.uuid === uuid);
+      events = events.filter(e => e.uuid !== uuid);
+      this.setState({events});
+      const response = await createGeofenceEvent(event);
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   putGeofenceEvents = (events = []) => {
@@ -50,7 +64,13 @@ export class Provider extends React.Component {
   };
 
   render() {
-    const {putUser, addGeofence, putGeofences, putGeofenceEvents} = this;
+    const {
+      putUser,
+      addGeofence,
+      putGeofences,
+      putGeofenceEvents,
+      submitGeofenceEventReview,
+    } = this;
     return (
       <Context.Provider
         value={{
@@ -59,6 +79,7 @@ export class Provider extends React.Component {
           addGeofence,
           putGeofences,
           putGeofenceEvents,
+          submitGeofenceEventReview,
         }}>
         {this.props.children}
       </Context.Provider>
