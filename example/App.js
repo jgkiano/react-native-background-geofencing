@@ -63,6 +63,7 @@ class App extends React.Component {
               component={GeofenceHistoryScreen}
             />
             <Stack.Screen
+              options={{title: 'Map Visualization'}}
               name="GeofenceEventMap"
               component={GeofenceEventMapScreen}
             />
