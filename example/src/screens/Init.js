@@ -8,6 +8,10 @@ import {withContext} from '../context';
 class InitScreen extends React.Component {
   repo = new Repository();
 
+  shouldComponentUpdate() {
+    return false;
+  }
+
   async componentDidMount() {
     const {context} = this.props;
     const user = await this.repo.getUser();
