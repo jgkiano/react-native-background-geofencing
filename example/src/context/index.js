@@ -1,6 +1,7 @@
 import React from 'react';
+import {ToastAndroid} from 'react-native';
 import Repository from '../services/Repository';
-import {createGeofenceEvent} from '../services/Utils';
+import {createGeofenceEvent, sendGeofenceEventReview} from '../services/Utils';
 export const Context = React.createContext();
 
 export const withContext = Component => {
@@ -23,16 +24,37 @@ export class Provider extends React.Component {
   };
 
   submitGeofenceEventReview = async (uuid, review) => {
-    let {events} = this.state;
+    let {events, geofences} = this.state;
     const originalEvents = [...events];
     try {
       const [event] = events.filter(e => e.uuid === uuid);
+      const [geofence] = geofences.filter(
+        ({configuration}) => configuration.id === event.id,
+      );
       events = events.filter(e => e.uuid !== uuid);
       this.setState({events});
-      const response = await createGeofenceEvent(event);
-      console.log(response);
+      const {avd_ids} = await createGeofenceEvent(event);
+      const [avdId] = avd_ids;
+      await sendGeofenceEventReview(avdId, review, geofence.configuration);
+      await this.repo.removeGeofenceEvent(uuid);
+      ToastAndroid.show(
+        'Your review has been submitted successfully!',
+        ToastAndroid.SHORT,
+      );
     } catch (error) {
-      console.log(error);
+      this.setState({events: originalEvents});
+      if (error.response) {
+        ToastAndroid.show(
+          `Error ${error.response.status ||
+            ''}- Could not submit your review, please try again`,
+          ToastAndroid.LONG,
+        );
+      } else {
+        ToastAndroid.show(
+          'Error - Could not reach OkHi servers, please check your internet connection and  try again',
+          ToastAndroid.LONG,
+        );
+      }
     }
   };
 
