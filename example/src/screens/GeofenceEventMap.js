@@ -12,12 +12,12 @@ export default function GeofenceEventMapScreen({route: {params}, navigation}) {
     geofenceEvent,
     geofence: {configuration, address},
   } = params;
-  const geofenceAddress = {
+  const geofenceAddressCoords = {
     latitude: configuration.lat,
     longitude: configuration.lng,
   };
   const region = {
-    ...geofenceAddress,
+    ...geofenceAddressCoords,
     ...FAR_ZOOM_LEVEL,
   };
   const triggerCoord = {
@@ -32,7 +32,7 @@ export default function GeofenceEventMapScreen({route: {params}, navigation}) {
           title={address.title || 'Geofence Address'}
           description="Where the geofence was created"
           pinColor="#1565C0"
-          coordinate={triggerCoord}
+          coordinate={geofenceAddressCoords}
         />
         <Marker
           title="Triggering location"
@@ -41,7 +41,7 @@ export default function GeofenceEventMapScreen({route: {params}, navigation}) {
           coordinate={triggerCoord}
         />
         <Circle
-          center={geofenceAddress}
+          center={geofenceAddressCoords}
           radius={configuration.radius}
           strokeWidth={2}
           strokeColor="rgba(21,101,192, 0.5)"
