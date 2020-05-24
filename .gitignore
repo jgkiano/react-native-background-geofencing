@@ -41,11 +41,6 @@ buck-out/
 \.buckd/
 *.keystore
 secrets.json
-index.android.bundle
 
 *.bundle
-<<<<<<< HEAD
-index.android.bundle
-=======
-index.android.bundle
->>>>>>> 11d0b3e5ec478a393b769e76f9db7ab68255fedf
+example/src/services/OkHiCore.js
