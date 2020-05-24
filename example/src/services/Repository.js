@@ -91,50 +91,16 @@ export default class Repository {
     }
   };
 
-  // getGeofenceEvents = async geofenceId => {
-  //   try {
-  //     const KEY = `${this.DB_STORED_GEOFENCE_EVENT_PREFIX}${geofenceId}`;
-  //     let storedGeofenceEvents = await AsyncStorage.getItem(KEY);
-  //     storedGeofenceEvents = storedGeofenceEvents
-  //       ? JSON.parse(storedGeofenceEvents)
-  //       : [];
-  //     return storedGeofenceEvents;
-  //   } catch (error) {
-  //     console.log(error);
-  //     return [];
-  //   }
-  // };
-
-  // addGeofenceEvent = async (geofenceId, event, data) => {
-  //   try {
-  //     const KEY = `${this.DB_STORED_GEOFENCE_EVENT_PREFIX}${geofenceId}`;
-  //     let storedGeofenceEvents = await this.getGeofenceEvents(geofenceId);
-  //     storedGeofenceEvents.unshift({event, data});
-  //     await AsyncStorage.setItem(KEY, JSON.stringify(storedGeofenceEvents));
-  //     console.log('Geofence event AsyncSaved: ', geofenceId);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // removeGeofence = async geofenceId => {
-  //   try {
-  //     const KEY = `${this.DB_STORED_GEOFENCE_EVENT_PREFIX}${geofenceId}`;
-  //     let storedGeofences = await this.getGeofences();
-  //     storedGeofences = storedGeofences.filter(
-  //       fence => fence.id !== geofenceId,
-  //     );
-  //     await AsyncStorage.setItem(
-  //       this.DB_STORED_GEOFENCE_KEY,
-  //       JSON.stringify(storedGeofences),
-  //     );
-  //     console.log('removed Geofence from gen pop');
-  //     await AsyncStorage.removeItem(KEY);
-  //     console.log('removed Geofence events');
-  //     await RNBackgroundGeofencing.remove(geofenceId);
-  //     console.log('removed listener');
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  removeGeofenceEvent = async uuid => {
+    try {
+      let events = await this.getGeofenceEvents();
+      events = events.filter(event => event.uuid !== uuid);
+      await AsyncStorage.setItem(
+        this.DB_STORED_GEOFENCE_EVENTS_KEY,
+        JSON.stringify(events),
+      );
+    } catch (error) {
+      throw error;
+    }
+  };
 }
