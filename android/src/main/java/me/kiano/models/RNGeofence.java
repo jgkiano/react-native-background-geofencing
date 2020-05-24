@@ -101,9 +101,9 @@ public class RNGeofence {
     }
 
     private void setUpRNGeofence() {
-        final int enter = transitionTypes.contains("enter") ? Geofence.GEOFENCE_TRANSITION_ENTER : -1;
-        final int exit = transitionTypes.contains("exit") ? Geofence.GEOFENCE_TRANSITION_EXIT : -1;
-        final int dwell = transitionTypes.contains("dwell") ? Geofence.GEOFENCE_TRANSITION_DWELL : -1;
+        final int enter = transitionTypes.contains("enter") ? Geofence.GEOFENCE_TRANSITION_ENTER : 0;
+        final int exit = transitionTypes.contains("exit") ? Geofence.GEOFENCE_TRANSITION_EXIT : 0;
+        final int dwell = transitionTypes.contains("dwell") ? Geofence.GEOFENCE_TRANSITION_DWELL : 0;
         geofencingClient = LocationServices.getGeofencingClient(context);
         Geofence geofence = new Geofence.Builder()
                 .setRequestId(id)
@@ -117,9 +117,9 @@ public class RNGeofence {
     }
 
     private GeofencingRequest getGeofencingRequest() {
-        final int enter = initialTriggerTransitionTypes.contains("enter") ? GeofencingRequest.INITIAL_TRIGGER_ENTER : -1;
-        final int exit = initialTriggerTransitionTypes.contains("exit") ? GeofencingRequest.INITIAL_TRIGGER_EXIT : -1;
-        final int dwell = initialTriggerTransitionTypes.contains("dwell") ? GeofencingRequest.INITIAL_TRIGGER_DWELL : -1;
+        final int enter = initialTriggerTransitionTypes.contains("enter") ? GeofencingRequest.INITIAL_TRIGGER_ENTER : 0;
+        final int exit = initialTriggerTransitionTypes.contains("exit") ? GeofencingRequest.INITIAL_TRIGGER_EXIT : 0;
+        final int dwell = initialTriggerTransitionTypes.contains("dwell") ? GeofencingRequest.INITIAL_TRIGGER_DWELL : 0;
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
         builder.setInitialTrigger(enter | exit | dwell);
         builder.addGeofences(geofenceList);

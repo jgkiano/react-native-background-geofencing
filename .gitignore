@@ -44,5 +44,5 @@ secrets.json
 
 *.bundle
 index.android.bundle
-example/src/services/OkHiCore.js
 example/android/app/src/main/AndroidManifest.xml
+example/src/services/OkHiCore.js
