@@ -48,12 +48,27 @@ export const createGeofenceEvent = async (geofenceEvent = {}) => {
         },
       ],
     };
-    console.log(JSON.stringify(payload));
     const {data} = await axios.post(createGeofenceEventUrl, payload);
     return data;
   } catch (error) {
+    console.log('ERROR - Submitting event');
+    console.log(JSON.stringify(error.response));
     throw error;
   }
 };
 
-export const sendGeofenceEventReview = () => {};
+export const sendGeofenceEventReview = async (avdId, review, configuration) => {
+  try {
+    const payload = {
+      address_verification_id: avdId,
+      ...review,
+      geofence_confguration: configuration,
+    };
+    const {updateGeofenceEventUrl} = webhooks;
+    await axios.post(updateGeofenceEventUrl, payload);
+  } catch (error) {
+    console.log('ERROR - Submitting review');
+    console.log(JSON.stringify(error.response));
+    throw error;
+  }
+};
