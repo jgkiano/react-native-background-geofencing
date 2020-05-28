@@ -1,13 +1,10 @@
 import React from 'react';
 import {CommonActions} from '@react-navigation/native';
 import FullScreenLoader from '../components/FullScreenLoader';
-import Repository from '../services/Repository';
 import {wait} from '../services/Utils';
 import {withContext} from '../context';
 
 class InitScreen extends React.Component {
-  repo = new Repository();
-
   shouldComponentUpdate() {
     return false;
   }
