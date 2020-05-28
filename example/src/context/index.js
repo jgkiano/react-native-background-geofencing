@@ -23,6 +23,18 @@ export class Provider extends React.Component {
     events: [],
   };
 
+  hydrate = async () => {
+    try {
+      const user = await this.repo.getUser();
+      const geofences = await this.repo.getGeofences();
+      const events = await this.repo.getGeofenceEvents();
+      this.setState({user, geofences, events});
+      return {user, geofences, events};
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   submitGeofenceEventReview = async (uuid, review) => {
     let {events, geofences} = this.state;
     const originalEvents = [...events];
@@ -92,6 +104,7 @@ export class Provider extends React.Component {
       putGeofences,
       putGeofenceEvents,
       submitGeofenceEventReview,
+      hydrate,
     } = this;
     return (
       <Context.Provider
@@ -102,6 +115,7 @@ export class Provider extends React.Component {
           putGeofences,
           putGeofenceEvents,
           submitGeofenceEventReview,
+          hydrate,
         }}>
         {this.props.children}
       </Context.Provider>
