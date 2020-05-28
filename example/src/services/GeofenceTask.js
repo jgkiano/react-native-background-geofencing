@@ -1,5 +1,7 @@
-import Repository from './Repository';
 import uuid from 'react-native-uuid';
+import analytics from '@segment/analytics-react-native';
+import {initSegment} from './Segment';
+import Repository from './Repository';
 
 export default async function GeofenceTask({event, data}) {
   try {
@@ -15,6 +17,14 @@ export default async function GeofenceTask({event, data}) {
       };
     });
     await repo.addGeofenceEvents(events);
+    await initSegment();
+    const tracking = events.map(geofenceEvent =>
+      analytics.track('Geofence Event Triggered', {
+        ...geofenceEvent,
+        geoPoint: `${geofenceEvent.lat},${geofenceEvent.lng}`,
+      }),
+    );
+    await Promise.all(tracking);
   } catch (error) {
     console.log(error);
   }
