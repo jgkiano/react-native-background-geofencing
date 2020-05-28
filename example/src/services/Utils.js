@@ -1,5 +1,6 @@
 import axios from 'axios';
 import {Platform} from 'react-native';
+import analytics from '@segment/analytics-react-native';
 import {
   getSystemVersion,
   getManufacturer,
@@ -57,7 +58,12 @@ export const createGeofenceEvent = async (geofenceEvent = {}) => {
   }
 };
 
-export const sendGeofenceEventReview = async (avdId, review, configuration) => {
+export const sendGeofenceEventReview = async (
+  avdId,
+  review,
+  configuration,
+  event = {},
+) => {
   try {
     const payload = {
       address_verification_id: avdId,
@@ -70,5 +76,18 @@ export const sendGeofenceEventReview = async (avdId, review, configuration) => {
     console.log('ERROR - Submitting review');
     console.log(JSON.stringify(error.response));
     throw error;
+  } finally {
+    analytics.track('Geofence Event Review Submitted', {
+      avdId,
+      review,
+      configuration: {
+        ...configuration,
+        geoPoint: `${configuration.lat},${configuration.lng}`,
+      },
+      event: {
+        ...event,
+        geoPoint: `${event.lat},${event.lng}`,
+      },
+    });
   }
 };
