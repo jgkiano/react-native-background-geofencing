@@ -147,17 +147,29 @@ class AddGeofenceScreen extends React.Component {
   };
 
   handleOnOkHiSuccess = location => {
-    const {title, otherInformation, directions, geoPoint, id} = location;
-    const {lat, lon} = geoPoint;
-    this.setState({
-      address: location,
-      launchOkHi: false,
-      lng: lon,
-      subtitle: directions || otherInformation || null,
-      id,
-      lat,
-      title,
-    });
+    const {geofences} = this.props.context;
+    const [existingLocation] = geofences.filter(
+      ({address}) => address.id === location.id,
+    );
+    if (existingLocation) {
+      this.setState({
+        error:
+          'You already have an active geofence for this address. Please create a new address, or select a different one',
+      });
+      this.handleErrorAlert();
+    } else {
+      const {title, otherInformation, directions, geoPoint, id} = location;
+      const {lat, lon} = geoPoint;
+      this.setState({
+        address: location,
+        launchOkHi: false,
+        lng: lon,
+        subtitle: directions || otherInformation || null,
+        id,
+        lat,
+        title,
+      });
+    }
   };
 
   handleOnAddressSelect = () => {
