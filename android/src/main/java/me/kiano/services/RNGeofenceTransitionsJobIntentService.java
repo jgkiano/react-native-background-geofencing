@@ -1,6 +1,10 @@
 package me.kiano.services;
 
 import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -9,6 +13,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.NetworkType;
@@ -23,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 
 import me.kiano.database.RNGeofenceDB;
 import me.kiano.models.RNGeofenceData;
+
+import com.facebook.react.bridge.ReactContextBaseJavaModule;
 
 public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
 
@@ -76,6 +84,51 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
                 getApplicationContext().startService(service);
             }
             HeadlessJsTaskService.acquireWakeLockNow(getApplicationContext());
+        }
+
+        showEventNotification();
+    }
+
+    private void showEventNotification() {
+        Log.v(TAG, "Configuring notification..");
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        String CHANNEL_ID = "RNBackgroundGeofencingEventNotification";
+        String CHANNEL_NAME = "Geofencing Events Notification";
+        String CHANNEL_DESCRIPTION = "Get notified when geofence events occurs";
+        int NOTIFICATION_ID = 2;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance);
+            channel.setDescription(CHANNEL_DESCRIPTION);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+        Intent intent = new Intent(this, getMainActivityClass());
+        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), NOTIFICATION_ID, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(getApplicationContext().getApplicationInfo().icon)
+                .setContentTitle("You have a new geofence event to review")
+                .setContentText("Tap to review")
+                .setContentIntent(pendingIntent)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(NOTIFICATION_ID, builder.build());
+        Log.v(TAG, "Sent notification 🤞");
+    }
+
+    public Class getMainActivityClass() {
+        String packageName = getApplicationContext().getPackageName();
+        Intent launchIntent = getApplicationContext().getPackageManager().getLaunchIntentForPackage(packageName);
+        String className = launchIntent.getComponent().getClassName();
+        try {
+            return Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
