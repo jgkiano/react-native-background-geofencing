@@ -1063,6 +1063,11 @@
     color "^3.1.2"
     react-native-iphone-x-helper "^1.2.1"
 
+"@segment/analytics-react-native@^1.1.1-beta.5":
+  version "1.1.1-beta.5"
+  resolved "https://registry.yarnpkg.com/@segment/analytics-react-native/-/analytics-react-native-1.1.1-beta.5.tgz#1edff653c630ab0e1dd09c02d0bcc97408d0037d"
+  integrity sha512-VhLROUM1S64nHT9YR59wmSiUhGdNQ7nCXv0HklmGglh372PVwWA6aM5a7vXj3OHvOH6yvWsyX01CyYw1rhgL7g==
+
 "@types/babel__core@^7.1.0":
   version "7.1.7"
   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.1.7.tgz#1dacad8840364a57c98d0dd4855c6dd3752c6b89"
@@ -5329,9 +5334,6 @@ react-is@^16.12.0, react-is@^16.13.0, react-is@^16.7.0, react-is@^16.8.1, react-
   integrity sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==
 
 "react-native-background-geofencing@file:..":
-  version "1.2.1"
-
-"react-native-background-geofencing@file:../":
   version "1.2.1"
 
 react-native-device-info@^5.5.8:
