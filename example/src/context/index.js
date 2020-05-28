@@ -47,7 +47,12 @@ export class Provider extends React.Component {
       this.setState({events});
       const {avd_ids} = await createGeofenceEvent(event);
       const [avdId] = avd_ids;
-      await sendGeofenceEventReview(avdId, review, geofence.configuration);
+      await sendGeofenceEventReview(
+        avdId,
+        review,
+        geofence.configuration,
+        event,
+      );
       await this.repo.removeGeofenceEvent(uuid);
       ToastAndroid.show(
         'Your review has been submitted successfully!',
