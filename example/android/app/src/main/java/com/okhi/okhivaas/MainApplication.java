@@ -1,4 +1,4 @@
-package me.kiano.rnbackgroundgeofencing;
+package com.okhi.okhivaas;
 
 import android.app.Application;
 import android.content.Context;
