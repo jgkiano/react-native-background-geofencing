@@ -7,6 +7,10 @@ import HomeGeofenceList from '../components/HomeGeofenceList';
 import {withContext} from '../context';
 
 class HomeScreen extends React.Component {
+  state = {
+    refreshing: false,
+  };
+
   handleOnPress = () => {
     const {navigation} = this.props;
     navigation.navigate('AddGeofence');
@@ -15,6 +19,14 @@ class HomeScreen extends React.Component {
   handleOnGeofenceSelect = geofence => {
     const {navigation} = this.props;
     navigation.navigate('GeofenceHistory', {geofence});
+  };
+
+  handleOnRefresh = () => {
+    const {context} = this.props;
+    this.setState({refreshing: true}, async () => {
+      await context.hydrate();
+      this.setState({refreshing: false});
+    });
   };
 
   renderPage = () => {
@@ -28,6 +40,8 @@ class HomeScreen extends React.Component {
         geofences={geofences}
         onGeofenceSelect={this.handleOnGeofenceSelect}
         events={events}
+        refreshing={this.state.refreshing}
+        onRefresh={this.handleOnRefresh}
       />
     );
   };

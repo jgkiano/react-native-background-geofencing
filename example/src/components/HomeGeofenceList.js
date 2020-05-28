@@ -12,6 +12,8 @@ const HomeGeofenceList = ({
   geofences = [],
   events = [],
   onGeofenceSelect = () => {},
+  refreshing = false,
+  onRefresh = null,
 } = {}) => {
   const renderItem = geofence => {
     const Touchable = Platform.select({
@@ -52,6 +54,8 @@ const HomeGeofenceList = ({
         data={geofences}
         renderItem={({item}) => renderItem(item)}
         keyExtractor={({configuration}) => configuration.id}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
       />
     );
   };
