@@ -2,6 +2,7 @@
 import React from 'react';
 import {Alert} from 'react-native';
 import styled from 'styled-components';
+import analytics from '@segment/analytics-react-native';
 import validator from 'validator';
 import CheckBox from '@react-native-community/checkbox';
 import {ScrollView, TouchableOpacity, View} from 'react-native';
@@ -146,7 +147,7 @@ class AddGeofenceScreen extends React.Component {
     console.log(error);
   };
 
-  handleOnOkHiSuccess = location => {
+  handleOnOkHiSuccess = (location, user) => {
     const {geofences} = this.props.context;
     const [existingLocation] = geofences.filter(
       ({address}) => address.id === location.id,
@@ -170,6 +171,7 @@ class AddGeofenceScreen extends React.Component {
         title,
       });
     }
+    analytics.identify(user.id, user);
   };
 
   handleOnAddressSelect = () => {
