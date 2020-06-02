@@ -43,6 +43,7 @@ export default class ReviewModal extends React.Component {
               selectedValue={quality}
               onValueChange={value => this.setState({quality: value})}>
               <Picker.Item label="👍 (Good)" value={1} />
+              <Picker.Item label="😐 (Meh)" value={0.5} />
               <Picker.Item label="👎 (Bad)" value={0} />
             </Picker>
           </InputGroup>
