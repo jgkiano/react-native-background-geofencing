@@ -35,30 +35,41 @@ export class Provider extends React.Component {
     }
   };
 
-  submitGeofenceEventReview = async (uuid, review) => {
+  submitGeofenceEventReview = async (geofenceEvents = [], review) => {
     let {events, geofences} = this.state;
     const originalEvents = [...events];
+    const uuids = geofenceEvents.map(geofenceEvent => geofenceEvent.uuid);
+    const geofenceId = geofenceEvents[0].id;
+    const geofence = geofences.find(
+      ({configuration}) => configuration.id === geofenceId,
+    );
+    events = events.filter(e => !uuids.includes(e.uuid));
+    this.setState({events});
     try {
-      const [event] = events.filter(e => e.uuid === uuid);
-      const [geofence] = geofences.filter(
-        ({configuration}) => configuration.id === event.id,
-      );
-      events = events.filter(e => e.uuid !== uuid);
-      this.setState({events});
-      const {avd_ids} = await createGeofenceEvent(event);
-      const [avdId] = avd_ids;
-      await sendGeofenceEventReview(
-        avdId,
-        review,
-        geofence.configuration,
-        event,
-      );
-      await this.repo.removeGeofenceEvent(uuid);
+      let avds = geofenceEvents.map(async geofenceEvent => {
+        const {avd_ids} = await createGeofenceEvent(geofenceEvent);
+        const [avdId] = avd_ids;
+        return {geofenceEvent, avdId};
+      });
+      avds = await Promise.all(avds);
+      const submissions = avds.map(({avdId, geofenceEvent}) => {
+        return sendGeofenceEventReview(
+          avdId,
+          review,
+          geofence.configuration,
+          geofenceEvent,
+        );
+      });
+      const removal = uuids.map(uuid => this.repo.removeGeofenceEvent(uuid));
+      await Promise.all(submissions);
+      await Promise.all(removal);
       ToastAndroid.show(
         'Your review has been submitted successfully!',
         ToastAndroid.SHORT,
       );
+      console.log('reviews submitted sucessfully..');
     } catch (error) {
+      console.log(error);
       this.setState({events: originalEvents});
       if (error.response) {
         ToastAndroid.show(
