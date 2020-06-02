@@ -1,4 +1,5 @@
 import React from 'react';
+import {Alert, Vibration} from 'react-native';
 import styled from 'styled-components';
 import FullButton from '../components/FullButton';
 import HomeEmptyState from '../components/HomeEmptyState';
@@ -29,6 +30,30 @@ class HomeScreen extends React.Component {
     });
   };
 
+  handleRemoveGeofence = async geofence => {
+    this.setState({refreshing: true});
+    const {context} = this.props;
+    const {removeGeofence} = context;
+    await removeGeofence(geofence);
+    this.setState({refreshing: false});
+  };
+
+  handleOnLongPress = geofence => {
+    Vibration.vibrate(70);
+    Alert.alert(
+      'Remove Geofence',
+      'Are you sure you want to remove this Geofence and all of its events?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => this.handleRemoveGeofence(geofence)},
+      ],
+      {cancelable: false},
+    );
+  };
+
   renderPage = () => {
     const {context} = this.props;
     const {geofences, events} = context;
@@ -42,6 +67,7 @@ class HomeScreen extends React.Component {
         events={events}
         refreshing={this.state.refreshing}
         onRefresh={this.handleOnRefresh}
+        onLongPress={this.handleOnLongPress}
       />
     );
   };
