@@ -11,9 +11,10 @@ import moment from 'moment';
 const HomeGeofenceList = ({
   geofences = [],
   events = [],
-  onGeofenceSelect = () => {},
   refreshing = false,
   onRefresh = null,
+  onGeofenceSelect = () => {},
+  onLongPress = () => {},
 } = {}) => {
   const renderItem = geofence => {
     const Touchable = Platform.select({
@@ -30,7 +31,10 @@ const HomeGeofenceList = ({
       '[Created on] Do MMMM YYYY [at] h:mm a',
     );
     return (
-      <Touchable onPress={() => onGeofenceSelect(geofence)}>
+      <Touchable
+        disabled={refreshing}
+        onPress={() => onGeofenceSelect(geofence)}
+        onLongPress={() => onLongPress(geofence)}>
         <ItemContainer active={geofenceEvents.length > 0}>
           <NotificationBanner />
           <TitleContainer>
