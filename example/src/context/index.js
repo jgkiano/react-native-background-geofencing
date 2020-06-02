@@ -113,6 +113,28 @@ export class Provider extends React.Component {
     }
   };
 
+  removeGeofence = async geofence => {
+    const originalEvents = [...this.state.events];
+    const originalGeofences = [...this.state.geofences];
+    try {
+      const {geofences, events} = await this.repo.removeGeofence(
+        geofence.configuration.id,
+      );
+      this.setState({geofences, events});
+      ToastAndroid.show(
+        'Geofence has been removed successfully!',
+        ToastAndroid.SHORT,
+      );
+    } catch (error) {
+      console.log(error);
+      this.setState({events: originalEvents, geofences: originalGeofences});
+      ToastAndroid.show(
+        `Error (${error.message}) - Could not remove geofence`,
+        ToastAndroid.LONG,
+      );
+    }
+  };
+
   render() {
     const {
       putUser,
@@ -121,6 +143,7 @@ export class Provider extends React.Component {
       putGeofenceEvents,
       submitGeofenceEventReview,
       hydrate,
+      removeGeofence,
     } = this;
     return (
       <Context.Provider
@@ -132,6 +155,7 @@ export class Provider extends React.Component {
           putGeofenceEvents,
           submitGeofenceEventReview,
           hydrate,
+          removeGeofence,
         }}>
         {this.props.children}
       </Context.Provider>
