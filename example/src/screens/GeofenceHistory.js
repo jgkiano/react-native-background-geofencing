@@ -234,6 +234,8 @@ const ToolBarContainer = styled.View`
   flex-direction: row;
   align-items: center;
   justify-content: center;
+  border-bottom-width: 2px;
+  border-color: #e0e0e0;
 `;
 
 const ToolBarRightContainer = styled.View`
