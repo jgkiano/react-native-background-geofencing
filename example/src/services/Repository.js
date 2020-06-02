@@ -103,4 +103,33 @@ export default class Repository {
       throw error;
     }
   };
+
+  removeGeofence = async geofenceId => {
+    try {
+      const geofenceEvents = await this.getGeofenceEvents();
+      const geofences = await this.getGeofences();
+      const filteredEvents = geofenceEvents.filter(
+        event => event.id !== geofenceId,
+      );
+      const filteredGeofences = geofences.filter(
+        geofence => geofence.configuration.id !== geofenceId,
+      );
+      await RNBackgroundGeofencing.remove(geofenceId);
+      await AsyncStorage.setItem(
+        this.DB_STORED_GEOFENCE_EVENTS_KEY,
+        JSON.stringify(filteredEvents),
+      );
+      await AsyncStorage.setItem(
+        this.DB_STORED_GEOFENCE_KEY,
+        JSON.stringify(filteredGeofences),
+      );
+      console.log('successfully removed geofence');
+      return {
+        geofences: filteredGeofences,
+        events: filteredEvents,
+      };
+    } catch (error) {
+      throw error;
+    }
+  };
 }
