@@ -37,12 +37,6 @@
             android:enabled="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
-        <service
-            android:name=".services.RNLocationProviderChangeBroadcastListener"
-            android:exported="true"
-            android:enabled="true"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
-
         <service android:name=".services.RNGeoFenceEventJavaScriptTaskService" />
 
     </application>
