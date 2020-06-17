@@ -129,19 +129,7 @@ export default {
   },
 
   async init() {
-    try {
-      const hasLocationPermission = await hasLocationPermission();
-      const isLocationServicesEnabled = await isLocationServicesEnabled();
-      if (
-        hasLocationPermission &&
-        isLocationServicesEnabled &&
-        Platform.OS === 'android'
-      ) {
-        BackgroundGeofencing.reRegisterErroneousGeofences();
-      }
-    } catch (error) {
-      throw error;
-    }
+    BackgroundGeofencing.reRegisterErroneousGeofences();
   },
 
   async configure(configuration = {}) {
