@@ -53,20 +53,26 @@ public class RNGeofence {
         return permission == PackageManager.PERMISSION_GRANTED;
     }
 
-    public static void reRegisterStoredGeofences(Context context) {
-        final String TAG = "RNGeofence";
-        RNGeofenceDB db = new RNGeofenceDB(context);
-        ArrayList<RNGeofence> storedGeofences = db.getAllGeofences();
-        Log.v(TAG, "Re register work started: " + storedGeofences.size());
-        for (RNGeofence storedGeofence : storedGeofences) {
-            storedGeofence.start(false, new RNGeofenceHandler() {
-                @Override
-                public void onSuccess(final String geofenceId) {
-                    Log.v(TAG, "Geofence successfully reinitialised: " + geofenceId);
-                }
+    private static void reRegisterGeofences (ArrayList<RNGeofence> geofences, RNGeofenceHandler handler) {
+        for (final RNGeofence geofence : geofences) {
+            geofence.start(false, handler);
+        }
+    }
 
+    public static void reRegisterErroneousGeofences(Context context) {
+        final String TAG = "RNGeofence";
+        final RNGeofenceDB db = new RNGeofenceDB(context);
+        ArrayList<RNGeofence> erroneousGeofences = db.getAllErroneousGeofences();
+        Log.v(TAG, "Re register error work started: " + erroneousGeofences.size());
+        if(erroneousGeofences.size() > 0) {
+            reRegisterGeofences(erroneousGeofences, new RNGeofenceHandler() {
                 @Override
-                public void onError(final String geofenceId, final Exception e) {
+                public void onSuccess(String geofenceId) {
+                    Log.v(TAG, "Geofence error successfully reinitialised: " + geofenceId);
+                    db.removeErroneousGeofence(geofenceId);
+                }
+                @Override
+                public void onError(String geofenceId, Exception e) {
                     Log.v(TAG, "Geofence FAILED reinitialisation: " + geofenceId);
                     Log.e(TAG, e.getMessage());
                 }
@@ -74,7 +80,29 @@ public class RNGeofence {
         }
     }
 
-    public static boolean isLocationEnabled(Context context) {
+    public static void reRegisterStoredGeofences(Context context) {
+        final String TAG = "RNGeofence";
+        final RNGeofenceDB db = new RNGeofenceDB(context);
+        ArrayList<RNGeofence> storedGeofences = db.getAllGeofences();
+        Log.v(TAG, "Re register work started: " + storedGeofences.size());
+        if (storedGeofences.size() > 0) {
+            reRegisterGeofences(storedGeofences, new RNGeofenceHandler() {
+                @Override
+                public void onSuccess(String geofenceId) {
+                    Log.v(TAG, "Geofence successfully reinitialised: " + geofenceId);
+                    db.removeErroneousGeofence(geofenceId);
+                }
+                @Override
+                public void onError(String geofenceId, Exception e) {
+                    Log.v(TAG, "Geofence FAILED reinitialisation: " + geofenceId);
+                    Log.e(TAG, e.getMessage());
+                    db.saveErroneousGeofence(geofenceId);
+                }
+            });
+        }
+    }
+
+    public static boolean isLocationServicesEnabled(Context context) {
         int locationMode = 0;
         String locationProviders;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
