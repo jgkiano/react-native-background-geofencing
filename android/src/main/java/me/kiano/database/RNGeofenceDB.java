@@ -89,6 +89,7 @@ public class RNGeofenceDB {
             DB db = DBFactory.open(context, DB_NAME);
             db.del(GEOFENCE_KEY_PREFIX + geofenceId);
             Log.v(TAG, "Geofence removed from DB: " + geofenceId);
+            db.close();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         } finally {
@@ -188,38 +189,27 @@ public class RNGeofenceDB {
         saveErroneousGeofence(geofences);
     }
 
-    public void removeErroneousGeofence(ArrayList<String> ids) {
+    public void removeErroneousGeofence(String id) {
         try {
             DB db = DBFactory.open(context, DB_NAME);
-            for (String id : ids) {
-                final String geofenceKey = ERRONEOUS_GEOFENCE_CONFIG_KEY + id;
-                if (db.exists(geofenceKey)) {
-                    db.del(geofenceKey);
-                    Log.v(TAG, "Erroneous Geofence removed from DB: " + id);
-                }
-            }
+            db.del(ERRONEOUS_GEOFENCE_CONFIG_KEY + id);
+            Log.v(TAG, "Geofence error removed from DB: " + id);
             db.close();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
     }
 
-    public void removeErroneousGeofence(String id) {
-        ArrayList<String> ids = new ArrayList<>();
-        ids.add(id);
-        removeErroneousGeofence(ids);
-    }
-
     public ArrayList<RNGeofence> getAllErroneousGeofences() {
         ArrayList<RNGeofence> geofences = new ArrayList<>();
         try {
             DB db = DBFactory.open(context, DB_NAME);
-            String[] fences = db.findKeys(ERRONEOUS_GEOFENCE_CONFIG_KEY);
-            for (String key: fences) {
+            String[] keys = db.findKeys(ERRONEOUS_GEOFENCE_CONFIG_KEY);
+            for (String key: keys) {
                 String savedGeofenceJSON = db.get(key);
                 RNGeofence rnGeofence = new RNGeofence(context, new JSONObject(savedGeofenceJSON));
                 if (rnGeofence.isExpired()) {
-                    removeGeofence(rnGeofence.id);
+                    removeErroneousGeofence(rnGeofence.id);
                 } else {
                     geofences.add(rnGeofence);
                 }
