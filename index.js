@@ -68,6 +68,13 @@ export const configureWebhook = async (webhookConfig = {}) => {
   }
 };
 
+export const configureNotification = async (notification = {}) => {
+  if (Platform.OS !== 'android') {
+    return;
+  }
+  await BackgroundGeofencing.configureNotification(notification);
+};
+
 export const hasLocationPermission = () => {
   if (Platform.OS !== 'android') {
     console.warn(
