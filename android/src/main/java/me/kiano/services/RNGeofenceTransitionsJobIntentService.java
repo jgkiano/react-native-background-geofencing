@@ -16,12 +16,14 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import com.facebook.react.HeadlessJsTaskService;
+import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import me.kiano.database.RNGeofenceDB;
+import me.kiano.models.RNGeofence;
 import me.kiano.models.RNGeofenceData;
 
 public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
@@ -37,14 +39,28 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
     protected void onHandleWork(@NonNull Intent intent) {
         Log.v(TAG, "GeofenceTransitionsJobIntentService work started");
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
+
+        if (geofencingEvent.hasError()) {
+            RNGeofenceDB db = new RNGeofenceDB(getApplicationContext());
+            List<Geofence> geofences = geofencingEvent.getTriggeringGeofences();
+            for (Geofence geofence : geofences) {
+                String geofenceId = geofence.getRequestId();
+                RNGeofence rnGeofence = db.getGeofence(geofenceId);
+                if (rnGeofence != null) {
+                    db.saveErroneousGeofence(rnGeofence);
+                }
+            }
+            return;
+        }
+
         RNGeofenceData rnGeofenceData = new RNGeofenceData(geofencingEvent);
+
         RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(getApplicationContext());
 
         if (rnGeofenceDB.hasWebhookConfiguration()) {
             Constraints constraints = new Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build();
-
             Data rnGeofenceWorkData = new Data.Builder()
                     .putString("event", rnGeofenceData.getEventName())
                     .putString("data", rnGeofenceData.getEventData())
@@ -56,9 +72,7 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
                     .addTag("RNGeofenceWork")
                     .setInitialDelay(1, TimeUnit.MINUTES)
                     .build();
-
             WorkManager.getInstance(getApplicationContext()).enqueue(uploadWorkRequest);
-
             Log.v(TAG, "Geofence work request queued up");
         }
 
