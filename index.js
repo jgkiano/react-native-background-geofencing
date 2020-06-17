@@ -74,6 +74,37 @@ export const configureWebhook = async (webhookConfig = {}) => {
   }
 };
 
+export const configure = async (configuration = {}) => {
+  try {
+    const {notification, webhook, jsTask} = configuration;
+    const task = jsTask?.task;
+    const config = {};
+    if (typeof notification === 'object') {
+      config['notification'] = notification;
+    }
+    if (typeof webhook === 'object') {
+      config['webhook'] = webhook;
+    }
+    if (typeof task === 'function') {
+      AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => {
+        return async ({event, data}) => {
+          try {
+            await task({
+              event: RNGeofenceEventNameMap[event],
+              data: JSON.parse(data),
+            });
+          } catch (error) {
+            console.error(`[RNBackgroundGeofencing]`, error);
+          }
+        };
+      });
+    }
+    await BackgroundGeofencing.configure(config);
+  } catch (error) {
+    throw error;
+  }
+};
+
 export default {
   async add(geofence = {}) {
     const {id, lat, lng} = geofence;
