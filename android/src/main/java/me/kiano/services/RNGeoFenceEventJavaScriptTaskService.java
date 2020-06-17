@@ -27,8 +27,6 @@ import me.kiano.models.RNNotification;
 
 public class RNGeoFenceEventJavaScriptTaskService extends HeadlessJsTaskService {
 
-    private static final String CHANNEL_ID = "RNBackgroundGeofencing";
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -40,19 +38,8 @@ public class RNGeoFenceEventJavaScriptTaskService extends HeadlessJsTaskService 
             e.printStackTrace();
         }
         if (!isAppOnForeground(getApplicationContext()) && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && rnNotification != null) {
-
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "RNBackgroundGeofencing", importance);
-            channel.setDescription("Background geofencing service");
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-
-            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle(rnNotification.getTitle())
-                    .setContentText(rnNotification.getText())
-                    .setSmallIcon(getApplicationContext().getApplicationInfo().icon)
-                    .build();
-
+            Notification notification = rnNotification.getNotification(notificationManager, getApplicationContext());
             startForeground(1, notification);
         }
     }
