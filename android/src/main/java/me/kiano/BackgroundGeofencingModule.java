@@ -115,7 +115,9 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void reRegisterErroneousGeofences() {
-        RNGeofence.reRegisterErroneousGeofences(getReactApplicationContext());
+        if (RNGeofence.hasLocationPermission(getReactApplicationContext()) && RNGeofence.isLocationServicesEnabled(getReactApplicationContext())) {
+            RNGeofence.reRegisterErroneousGeofences(getReactApplicationContext());
+        }
     }
 
 }
