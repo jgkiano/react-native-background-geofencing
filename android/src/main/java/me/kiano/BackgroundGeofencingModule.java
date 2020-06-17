@@ -43,7 +43,7 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
                 return;
             }
 
-            if (!RNGeofence.isLocationEnabled(getReactApplicationContext())) {
+            if (!RNGeofence.isLocationServicesEnabled(getReactApplicationContext())) {
                 promise.reject("location_services_disabled", "Location services are disabled");
                 return;
             }
@@ -113,5 +113,19 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void hasLocationPermission(Promise promise) {
+        promise.resolve(RNGeofence.hasLocationPermission(getReactApplicationContext()));
+    }
+
+    @ReactMethod
+    public void isLocationServicesEnabled(Promise promise) {
+        promise.resolve(RNGeofence.isLocationServicesEnabled(getReactApplicationContext()));
+    }
+
+    @ReactMethod
+    public void reRegisterErroneousGeofences() {
+        RNGeofence.reRegisterErroneousGeofences(getReactApplicationContext());
+    }
 
 }
