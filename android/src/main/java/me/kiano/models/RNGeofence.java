@@ -1,9 +1,16 @@
 package me.kiano.models;
 
+import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
 
 import com.facebook.react.bridge.ReadableMap;
 import com.google.android.gms.location.Geofence;
@@ -40,6 +47,50 @@ public class RNGeofence {
     private GeofencingClient geofencingClient;
     private PendingIntent geofencePendingIntent;
     private final String TAG = "RNGeofence";
+
+    public static boolean hasLocationPermission(Context context) {
+        int permission = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
+        return permission == PackageManager.PERMISSION_GRANTED;
+    }
+
+    public static void reRegisterStoredGeofences(Context context) {
+        final String TAG = "RNGeofence";
+        RNGeofenceDB db = new RNGeofenceDB(context);
+        ArrayList<RNGeofence> storedGeofences = db.getAllGeofences();
+        Log.v(TAG, "Re register work started: " + storedGeofences.size());
+        for (RNGeofence storedGeofence : storedGeofences) {
+            storedGeofence.start(false, new RNGeofenceHandler() {
+                @Override
+                public void onSuccess(final String geofenceId) {
+                    Log.v(TAG, "Geofence successfully reinitialised: " + geofenceId);
+                }
+
+                @Override
+                public void onError(final String geofenceId, final Exception e) {
+                    Log.v(TAG, "Geofence FAILED reinitialisation: " + geofenceId);
+                    Log.e(TAG, e.getMessage());
+                }
+            });
+        }
+    }
+
+    public static boolean isLocationEnabled(Context context) {
+        int locationMode = 0;
+        String locationProviders;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            try {
+                locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+            } catch (Settings.SettingNotFoundException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
+        } else {
+            locationProviders = Settings.Secure.getString(context.getContentResolver(),
+                    Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            return !TextUtils.isEmpty(locationProviders);
+        }
+    }
 
     public static void remove(Context context,String id) {
         GeofencingClient geofencingClient = LocationServices.getGeofencingClient(context);
