@@ -29,23 +29,6 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         super(reactContext);
     }
 
-    public static boolean isLocationEnabled(Context context) {
-        int locationMode = 0;
-        String locationProviders;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
-            try {
-                locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
-            } catch (Settings.SettingNotFoundException e) {
-                e.printStackTrace();
-                return false;
-            }
-            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
-        } else{
-            locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-            return !TextUtils.isEmpty(locationProviders);
-        }
-    }
-
     @Override
     public String getName() {
         return "BackgroundGeofencing";
@@ -54,14 +37,13 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void add(ReadableMap geoFence, final Promise promise) {
         try {
-            int permission = ActivityCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
 
-            if (permission != PackageManager.PERMISSION_GRANTED) {
+            if (!RNGeofence.hasLocationPermission(getReactApplicationContext())) {
                 promise.reject("permission_denied", "Access fine location is not permitted");
                 return;
             }
 
-            if (!isLocationEnabled(getReactApplicationContext())) {
+            if (!RNGeofence.isLocationEnabled(getReactApplicationContext())) {
                 promise.reject("location_services_disabled", "Location services are disabled");
                 return;
             }
@@ -107,5 +89,29 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         notification.save(getReactApplicationContext());
         promise.resolve(true);
     }
+
+    @ReactMethod
+    public void configure(ReadableMap configuration, final Promise promise) {
+        try {
+            if (configuration.hasKey("notification")) {
+                ReadableMap notification = configuration.getMap("notification");
+                RNNotification rnNotification = new RNNotification(notification);
+                rnNotification.save(getReactApplicationContext());
+            } else {
+                RNNotification rnNotification = new RNNotification();
+                rnNotification.save(getReactApplicationContext());
+            }
+            if (configuration.hasKey("webhook")) {
+                ReadableMap webhook = configuration.getMap("webhook");
+                RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration = new RNGeofenceWebhookConfiguration(webhook);
+                rnGeofenceWebhookConfiguration.save(getReactApplicationContext());
+            }
+            promise.resolve(true);
+        } catch (JSONException e) {
+            promise.reject("geofence_exception", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 
 }
