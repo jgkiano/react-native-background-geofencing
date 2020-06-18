@@ -128,10 +128,6 @@ export default {
     }
   },
 
-  async init() {
-    BackgroundGeofencing.reRegisterErroneousGeofences();
-  },
-
   async configure(configuration = {}) {
     try {
       const {notification, webhook, jsTask} = configuration;
