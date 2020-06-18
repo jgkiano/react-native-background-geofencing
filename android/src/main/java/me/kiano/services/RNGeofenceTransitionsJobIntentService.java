@@ -41,15 +41,6 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
 
         if (geofencingEvent.hasError()) {
-            RNGeofenceDB db = new RNGeofenceDB(getApplicationContext());
-            List<Geofence> geofences = geofencingEvent.getTriggeringGeofences();
-            for (Geofence geofence : geofences) {
-                String geofenceId = geofence.getRequestId();
-                RNGeofence rnGeofence = db.getGeofence(geofenceId);
-                if (rnGeofence != null) {
-                    db.saveErroneousGeofence(rnGeofence);
-                }
-            }
             return;
         }
 
