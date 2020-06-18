@@ -26,33 +26,6 @@ export const RNGeofenceEvent = {
   ERROR: 'ERROR',
 };
 
-export const configureJSTask = (jsTask = {}) => {
-  if (Platform.OS !== 'android') {
-    return;
-  }
-
-  if (typeof jsTakConfig !== 'object') {
-    throw new Error('invalid JavaScript task configuration provided');
-  }
-
-  const task = jsTask?.task;
-
-  if (typeof task === 'function') {
-    AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => {
-      return async ({event, data}) => {
-        try {
-          await task({
-            event: RNGeofenceEventNameMap[event],
-            data: JSON.parse(data),
-          });
-        } catch (error) {
-          console.error(`[RNBackgroundGeofencing]`, error);
-        }
-      };
-    });
-  }
-};
-
 export const configureWebhook = async (webhookConfig = {}) => {
   if (Platform.OS !== 'android') {
     return;
