@@ -3,14 +3,20 @@
 // Definitions by: Kiano (@jgkiano)
 // Definitions: https://github.com/jgkiano/react-native-background-geofencing/blob/master/index.d.ts
 
-export type RNBackgroundGeofenceEventName =
-  | 'ENTER'
-  | 'EXIT'
-  | 'DWELL'
-  | 'UNKNOWN'
-  | 'ERROR';
+export interface RNGeofence {
+  id: string;
+  lat: number;
+  lng: number;
+  radius: number;
+  expiration: number;
+  notificationResponsiveness: number;
+  loiteringDelay: number;
+  setDwellTransitionType: boolean;
+  registerOnDeviceRestart: boolean;
+  setInitialTriggers: boolean;
+}
 
-export enum RNGeofenceEvent {
+export enum RNGeofenceEventName {
   ENTER = 'ENTER',
   EXIT = 'EXIT',
   DWELL = 'DWELL',
@@ -18,78 +24,69 @@ export enum RNGeofenceEvent {
   ERROR = 'ERROR',
 }
 
-interface RNBackgroundGeofenceEventBaseData {
-  geofenceIds: Array<string>;
+export interface RNGeofenceNotification {
+  title?: string;
+  text?: string;
+  importance?: number;
+  channelId?: string;
+  channelName?: string;
+  channelDescription?: string;
 }
 
-export interface RNBackgroundGeofenceEventData
-  extends RNBackgroundGeofenceEventBaseData {
-  accuracy?: number;
-  altitude?: number;
-  bearing?: number;
-  time?: number;
-  provider?: number;
-  lat?: number;
-  lng?: number;
-}
-
-export interface RNBackgroundGeofenceEventErrorData
-  extends RNBackgroundGeofenceEventBaseData {
-  errorMessage?: string;
-}
-
-export interface RNBackgroundGeofenceEvent {
-  event: RNBackgroundGeofenceEventName;
-  data: RNBackgroundGeofenceEventData | RNBackgroundGeofenceEventErrorData;
-}
-
-export type RNGeofenceJSTask = (
-  geofenceEvent: RNBackgroundGeofenceEvent,
-) => any;
-
-export interface RNGeofenceJSTaskConfig {
-  task: RNGeofenceJSTask;
-  notification: {
-    title: string;
-    text: string;
-  };
-}
-
-export interface RNGeofenceWebhookConfig {
+export interface RNGeofenceWebhook {
   url: string;
+  timeout?: number;
+  exclude?: Array<string>;
   headers?: {
     [key: string]: any;
   };
-  timeout?: number;
-  exclude?: Array<string>;
   meta?: {
     [key: string]: any;
   };
 }
 
-export interface RNGeofence {
-  id: string;
+export interface RNGeofenceEventData {
+  accuracy: number;
+  altitude: number;
+  bearing: number;
+  time: number;
+  provider: string;
   lat: number;
   lng: number;
-  radius?: number;
-  expiration?: number;
-  notificationResponsiveness?: number;
-  loiteringDelay?: number;
-  setDwellTransitionType?: boolean;
-  registerOnDeviceRestart?: boolean;
-  setInitialTriggers?: boolean;
+  geofenceIds: Array<string>;
 }
+
+export interface RNGeofenceJsTask {
+  task: {event: RNGeofenceEventName; data: RNGeofenceEventData};
+}
+
+export interface RNGeofenceConfiguration {
+  notification?: RNGeofenceNotification;
+  webhook?: RNGeofenceWebhook;
+  jsTask?: RNGeofenceJsTask;
+}
+
+//-- methods --//
+
+export function isLocationServicesEnabled(): Promise<boolean>;
+
+export function hasLocationPermission(): Promise<boolean>;
+
+export function configureNotification(
+  notification: RNGeofenceNotification,
+): Promise<void>;
+
+export function configureWebhook(webhook: RNGeofenceWebhook): Promise<void>;
+
+export function configureJSTask(jsTask: RNGeofenceJsTask): void;
+
+//-- default export --//
 
 export interface BackgroundGeofencing {
   add(geofence: RNGeofence): Promise<string>;
-  remove(geofenceId: string): void;
+  remove(geofenceId: string): Promise<void>;
+  configure(configuration: RNGeofenceConfiguration): Promise<void>;
 }
-
-export function configureJSTask(jsTakConfig: RNGeofenceJSTaskConfig): void;
-
-export function configureWebhook(
-  webhookConfig: RNGeofenceWebhookConfig,
-): Promise<boolean | void>;
 
 declare const RNBackgroundGeofencing: BackgroundGeofencing;
 
