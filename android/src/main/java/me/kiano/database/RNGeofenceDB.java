@@ -33,7 +33,6 @@ public class RNGeofenceDB {
 
     private String NOTIFICATION_CONFIG_KEY = "RNNotificationDB:v1:configuration";
 
-    private String ERRONEOUS_GEOFENCE_CONFIG_KEY = "RNErroneousGeofenceDB:v1:";
 
     public void saveGeofence (RNGeofence rnGeofence) {
         try {
@@ -66,6 +65,19 @@ public class RNGeofenceDB {
             Log.e(TAG, e.getMessage());
             return savedGeofences;
         }
+    }
+
+    public ArrayList<RNGeofence> getAllRestartGeofences() {
+        ArrayList<RNGeofence> geofences = getAllGeofences();
+        ArrayList<RNGeofence> restartGeofences = new ArrayList<>();
+        if (geofences.size() > 0) {
+            for(RNGeofence geofence: geofences) {
+                if (geofence.registerOnDeviceRestart) {
+                    restartGeofences.add(geofence);
+                }
+            }
+        }
+        return restartGeofences;
     }
 
     public RNGeofence getGeofence(String id) {
@@ -161,64 +173,4 @@ public class RNGeofenceDB {
         }
     }
 
-    public void saveErroneousGeofence(ArrayList<RNGeofence> geofences) {
-        try {
-            DB db = DBFactory.open(context, DB_NAME);
-            for (RNGeofence geofence : geofences) {
-                db.put(ERRONEOUS_GEOFENCE_CONFIG_KEY + geofence.id, geofence.toJSON());
-                Log.v(TAG, "Erroneous Geofence successfully saved to DB: " + geofence.id);
-            }
-            db.close();
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-    }
-
-    public void saveErroneousGeofence(String geofenceId) {
-        try {
-            RNGeofence geofence = getGeofence(geofenceId);
-            saveErroneousGeofence(geofence);
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-    }
-
-    public void saveErroneousGeofence(RNGeofence geofence) {
-        ArrayList<RNGeofence> geofences = new ArrayList<>();
-        geofences.add(geofence);
-        saveErroneousGeofence(geofences);
-    }
-
-    public void removeErroneousGeofence(String id) {
-        try {
-            DB db = DBFactory.open(context, DB_NAME);
-            db.del(ERRONEOUS_GEOFENCE_CONFIG_KEY + id);
-            Log.v(TAG, "Geofence error removed from DB: " + id);
-            db.close();
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-    }
-
-    public ArrayList<RNGeofence> getAllErroneousGeofences() {
-        ArrayList<RNGeofence> geofences = new ArrayList<>();
-        try {
-            DB db = DBFactory.open(context, DB_NAME);
-            String[] keys = db.findKeys(ERRONEOUS_GEOFENCE_CONFIG_KEY);
-            for (String key: keys) {
-                String savedGeofenceJSON = db.get(key);
-                RNGeofence rnGeofence = new RNGeofence(context, new JSONObject(savedGeofenceJSON));
-                if (rnGeofence.isExpired()) {
-                    removeErroneousGeofence(rnGeofence.id);
-                } else {
-                    geofences.add(rnGeofence);
-                }
-            }
-            db.close();
-            return geofences;
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-            return  geofences;
-        }
-    }
 }
