@@ -1,9 +1,21 @@
 package me.kiano.models;
 
+import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
+
+import androidx.core.app.ActivityCompat;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.facebook.react.bridge.ReadableMap;
 import com.google.android.gms.location.Geofence;
@@ -18,10 +30,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import me.kiano.database.RNGeofenceDB;
 import me.kiano.interfaces.RNGeofenceHandler;
 import me.kiano.receivers.RNGeofenceBroadcastReceiver;
+import me.kiano.services.RNGeofenceRestartWorker;
 
 public class RNGeofence {
     public final String id;
@@ -40,6 +54,48 @@ public class RNGeofence {
     private GeofencingClient geofencingClient;
     private PendingIntent geofencePendingIntent;
     private final String TAG = "RNGeofence";
+
+    public static void schedulePeriodicWork(Context context) {
+        final String PERIODIC_WORK_NAME = "RNGeofencePeriodicWorker";
+        final String PERIODIC_WORK_TAG = "RNGeofencePeriodicWork";
+        final TimeUnit PERIODIC_WORK_TIME_UNIT = TimeUnit.MINUTES;
+        final int PERIODIC_WORK_TIME_INTERVAL = 16;
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .setRequiresBatteryNotLow(true)
+                .build();
+        PeriodicWorkRequest periodicWorkRequest =
+                new PeriodicWorkRequest.Builder(RNGeofenceRestartWorker.class, PERIODIC_WORK_TIME_INTERVAL, PERIODIC_WORK_TIME_UNIT)
+                        .addTag(PERIODIC_WORK_TAG)
+                        .setConstraints(constraints)
+                        .build();
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
+        Log.v(PERIODIC_WORK_TAG, "Periodic work scheduled");
+    }
+
+    public static boolean hasLocationPermission(Context context) {
+        int permission = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
+        return permission == PackageManager.PERMISSION_GRANTED;
+    }
+
+
+    public static boolean isLocationServicesEnabled(Context context) {
+        int locationMode = 0;
+        String locationProviders;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            try {
+                locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+            } catch (Settings.SettingNotFoundException e) {
+                e.printStackTrace();
+                return false;
+            }
+            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
+        } else {
+            locationProviders = Settings.Secure.getString(context.getContentResolver(),
+                    Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            return !TextUtils.isEmpty(locationProviders);
+        }
+    }
 
     public static void remove(Context context,String id) {
         GeofencingClient geofencingClient = LocationServices.getGeofencingClient(context);
@@ -103,9 +159,9 @@ public class RNGeofence {
         geofenceList.add(geofence);
     }
 
-    private GeofencingRequest getGeofencingRequest() {
+    private GeofencingRequest getGeofencingRequest(boolean fireInitialTriggers) {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        if (setInitialTriggers) {
+        if (setInitialTriggers && fireInitialTriggers) {
             builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER | GeofencingRequest.INITIAL_TRIGGER_EXIT | dwellTransitionType);
         }
         builder.addGeofences(geofenceList);
@@ -126,9 +182,9 @@ public class RNGeofence {
         db.saveGeofence(this);
     }
 
-    public void start (final Boolean save, final RNGeofenceHandler handler) {
+    public void start (final Boolean save, final Boolean fireInitialTriggers, final RNGeofenceHandler handler) {
         try {
-            geofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent())
+            geofencingClient.addGeofences(getGeofencingRequest(fireInitialTriggers), getGeofencePendingIntent())
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {

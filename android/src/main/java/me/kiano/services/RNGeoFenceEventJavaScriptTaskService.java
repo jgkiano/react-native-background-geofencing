@@ -2,21 +2,15 @@ package me.kiano.services;
 
 import android.app.ActivityManager;
 import android.app.Notification;
-import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 
-import androidx.core.app.NotificationCompat;
-
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.jstasks.HeadlessJsTaskConfig;
-import com.snappydb.SnappydbException;
-
-import org.json.JSONException;
 
 import java.util.List;
 
@@ -26,8 +20,6 @@ import me.kiano.database.RNGeofenceDB;
 import me.kiano.models.RNNotification;
 
 public class RNGeoFenceEventJavaScriptTaskService extends HeadlessJsTaskService {
-
-    private static final String CHANNEL_ID = "RNBackgroundGeofencing";
 
     @Override
     public void onCreate() {
@@ -40,19 +32,8 @@ public class RNGeoFenceEventJavaScriptTaskService extends HeadlessJsTaskService 
             e.printStackTrace();
         }
         if (!isAppOnForeground(getApplicationContext()) && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && rnNotification != null) {
-
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "RNBackgroundGeofencing", importance);
-            channel.setDescription("Background geofencing service");
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-
-            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle(rnNotification.getTitle())
-                    .setContentText(rnNotification.getText())
-                    .setSmallIcon(getApplicationContext().getApplicationInfo().icon)
-                    .build();
-
+            Notification notification = rnNotification.getNotification(notificationManager, getApplicationContext());
             startForeground(1, notification);
         }
     }

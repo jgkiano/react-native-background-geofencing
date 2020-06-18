@@ -2,10 +2,7 @@ package me.kiano.services;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
@@ -13,7 +10,6 @@ import androidx.core.app.JobIntentService;
 import java.util.ArrayList;
 
 import me.kiano.database.RNGeofenceDB;
-import me.kiano.interfaces.RNGeofenceHandler;
 import me.kiano.models.RNGeofence;
 
 public class RNDeviceRestartJobIntentService extends JobIntentService {
@@ -27,23 +23,12 @@ public class RNDeviceRestartJobIntentService extends JobIntentService {
 
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
-        RNGeofenceDB db = new RNGeofenceDB(getApplication());
-        ArrayList<RNGeofence> storedGeofences = db.getAllGeofences();
-        Log.v(TAG, "RNDeviceRestartJobIntentService work started: " + storedGeofences.size());
-
-        for (RNGeofence storedGeofence : storedGeofences) {
-            storedGeofence.start(false, new RNGeofenceHandler() {
-                @Override
-                public void onSuccess(final String geofenceId) {
-                    Log.v(TAG, "Geofence successfully reinitialised: " + geofenceId);
-                }
-
-                @Override
-                public void onError(final String geofenceId, Exception e) {
-                    Log.v(TAG, "Geofence FAILED reinitialisation: " + geofenceId);
-                    Log.e(TAG, e.getMessage());
-                }
-            });
+        if (RNGeofence.isLocationServicesEnabled(getApplicationContext()) && RNGeofence.hasLocationPermission(getApplicationContext())) {
+            RNGeofenceDB db = new RNGeofenceDB(getApplicationContext());
+            ArrayList<RNGeofence> geofences = db.getAllRestartGeofences();
+            if (geofences.size() > 0) {
+                RNGeofence.schedulePeriodicWork(getApplicationContext());
+            }
         }
     }
 }

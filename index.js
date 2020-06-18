@@ -26,7 +26,7 @@ export const RNGeofenceEvent = {
   ERROR: 'ERROR',
 };
 
-export const configureJSTask = (jsTakConfig = {}) => {
+export const configureJSTask = (jsTask = {}) => {
   if (Platform.OS !== 'android') {
     return;
   }
@@ -35,17 +35,9 @@ export const configureJSTask = (jsTakConfig = {}) => {
     throw new Error('invalid JavaScript task configuration provided');
   }
 
-  const notification = jsTakConfig.notification || null;
+  const task = jsTask?.task;
 
-  const task = jsTakConfig.task || null;
-
-  if (typeof notification === 'object' && typeof task === 'function') {
-    const {title, text} = notification;
-    if (typeof title !== 'string' || typeof text !== 'string') {
-      throw new Error('invalid notification configuration provided');
-    } else {
-      BackgroundGeofencing.configureNotification(notification);
-    }
+  if (typeof task === 'function') {
     AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => {
       return async ({event, data}) => {
         try {
@@ -62,16 +54,45 @@ export const configureJSTask = (jsTakConfig = {}) => {
 };
 
 export const configureWebhook = async (webhookConfig = {}) => {
-  if (
-    Platform.OS === 'android' &&
-    typeof webhookConfig === 'object' &&
-    typeof webhookConfig.url === 'string'
-  ) {
-    return await BackgroundGeofencing.configureWebhook({
+  if (Platform.OS !== 'android') {
+    return;
+  }
+  if (webhookConfig?.url) {
+    await BackgroundGeofencing.configureWebhook({
       ...defaultWebhookConfiguration,
       ...webhookConfig,
     });
+    return;
+  } else {
+    throw new Error('configureWebhook requires a valid url');
   }
+};
+
+export const configureNotification = async (notification = {}) => {
+  if (Platform.OS !== 'android') {
+    return;
+  }
+  await BackgroundGeofencing.configureNotification(notification);
+};
+
+export const hasLocationPermission = () => {
+  if (Platform.OS !== 'android') {
+    console.warn(
+      'hasLocationPermission function only works on Android platform',
+    );
+    return Promise.resolve(false);
+  }
+  return BackgroundGeofencing.hasLocationPermission();
+};
+
+export const isLocationServicesEnabled = () => {
+  if (Platform.OS !== 'android') {
+    console.warn(
+      'isLocationServicesEnabled function only works on Android platform',
+    );
+    return Promise.resolve(false);
+  }
+  return BackgroundGeofencing.isLocationServicesEnabled();
 };
 
 export default {
@@ -104,6 +125,40 @@ export default {
   remove(geofenceId) {
     if (typeof geofenceId === 'string' && Platform.OS === 'android') {
       BackgroundGeofencing.remove(geofenceId);
+    }
+  },
+
+  async configure(configuration = {}) {
+    try {
+      const {notification, webhook, jsTask} = configuration;
+      const task = jsTask?.task;
+      const config = {};
+      if (Platform.OS !== 'android') {
+        return;
+      }
+      if (typeof notification === 'object') {
+        config['notification'] = notification;
+      }
+      if (typeof webhook === 'object') {
+        config['webhook'] = {...defaultWebhookConfiguration, ...webhook};
+      }
+      if (typeof task === 'function') {
+        AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => {
+          return async ({event, data}) => {
+            try {
+              await task({
+                event: RNGeofenceEventNameMap[event],
+                data: JSON.parse(data),
+              });
+            } catch (error) {
+              console.error(`[RNBackgroundGeofencing]`, error);
+            }
+          };
+        });
+      }
+      await BackgroundGeofencing.configure(config);
+    } catch (error) {
+      throw error;
     }
   },
 };

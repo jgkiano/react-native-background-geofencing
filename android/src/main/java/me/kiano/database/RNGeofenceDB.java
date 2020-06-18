@@ -33,6 +33,7 @@ public class RNGeofenceDB {
 
     private String NOTIFICATION_CONFIG_KEY = "RNNotificationDB:v1:configuration";
 
+
     public void saveGeofence (RNGeofence rnGeofence) {
         try {
             DB db = DBFactory.open(context, DB_NAME);
@@ -66,11 +67,41 @@ public class RNGeofenceDB {
         }
     }
 
+    public ArrayList<RNGeofence> getAllRestartGeofences() {
+        ArrayList<RNGeofence> geofences = getAllGeofences();
+        ArrayList<RNGeofence> restartGeofences = new ArrayList<>();
+        if (geofences.size() > 0) {
+            for(RNGeofence geofence: geofences) {
+                if (geofence.registerOnDeviceRestart) {
+                    restartGeofences.add(geofence);
+                }
+            }
+        }
+        return restartGeofences;
+    }
+
+    public RNGeofence getGeofence(String id) {
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            String geofenceKey = GEOFENCE_KEY_PREFIX + id;
+            if (db.exists(geofenceKey)) {
+                String savedGeofenceJSON = db.get(geofenceKey);
+                return new RNGeofence(context, new JSONObject(savedGeofenceJSON));
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+            return null;
+        }
+    }
+
     public String removeGeofence(String geofenceId) {
         try {
             DB db = DBFactory.open(context, DB_NAME);
             db.del(GEOFENCE_KEY_PREFIX + geofenceId);
             Log.v(TAG, "Geofence removed from DB: " + geofenceId);
+            db.close();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         } finally {
@@ -123,7 +154,9 @@ public class RNGeofenceDB {
     public boolean hasNotificationConfiguration() {
         try {
             DB db = DBFactory.open(context, DB_NAME);
-            return db.exists(NOTIFICATION_CONFIG_KEY);
+            boolean result = db.exists(NOTIFICATION_CONFIG_KEY);
+            db.close();
+            return result;
         } catch (Exception e) {
             return false;
         }
@@ -133,9 +166,11 @@ public class RNGeofenceDB {
         try {
             DB db = DBFactory.open(context, DB_NAME);
             RNNotification notification = new RNNotification(new JSONObject(db.get(NOTIFICATION_CONFIG_KEY)));
+            db.close();
             return notification;
         } catch (Exception e) {
             throw e;
         }
     }
+
 }

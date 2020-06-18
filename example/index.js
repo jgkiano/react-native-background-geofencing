@@ -1,22 +1,20 @@
 import {AppRegistry} from 'react-native';
-import {
-  configureJSTask,
-  configureWebhook,
-} from 'react-native-background-geofencing';
+import RNBackgroundGeofencing from 'react-native-background-geofencing';
 import App from './App';
 import {name as appName} from './app.json';
 import task from './src/services/task';
 import secrets from './secrets.json';
 
-configureJSTask({
-  task,
-  notification: {
-    title: 'Geofence warming up',
-    text: 'Registering geofences...',
-  },
-});
+const notification = {
+  title: 'Starting set up',
+  text: 'This will only take a sec..',
+  importance: 3,
+  channelId: 'myChannelId',
+  channelName: 'My Channel Name',
+  channelDescription: 'My channel description',
+};
 
-configureWebhook({
+const webhook = {
   url: secrets.webhook,
   meta: {
     lib: {
@@ -24,6 +22,16 @@ configureWebhook({
       version: 'bar',
     },
   },
+};
+
+const jsTask = {
+  task,
+};
+
+RNBackgroundGeofencing.configure({
+  notification,
+  webhook,
+  jsTask,
 });
 
 AppRegistry.registerComponent(appName, () => App);
