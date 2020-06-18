@@ -11,6 +11,11 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.facebook.react.bridge.ReadableMap;
 import com.google.android.gms.location.Geofence;
@@ -25,10 +30,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import me.kiano.database.RNGeofenceDB;
 import me.kiano.interfaces.RNGeofenceHandler;
 import me.kiano.receivers.RNGeofenceBroadcastReceiver;
+import me.kiano.services.RNGeofenceRestartWorker;
 
 public class RNGeofence {
     public final String id;
@@ -48,59 +55,29 @@ public class RNGeofence {
     private PendingIntent geofencePendingIntent;
     private final String TAG = "RNGeofence";
 
+    public static void schedulePeriodicWork(Context context) {
+        final String PERIODIC_WORK_NAME = "RNGeofencePeriodicWorker";
+        final String PERIODIC_WORK_TAG = "RNGeofencePeriodicWork";
+        final TimeUnit PERIODIC_WORK_TIME_UNIT = TimeUnit.MINUTES;
+        final int PERIODIC_WORK_TIME_INTERVAL = 16;
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .setRequiresBatteryNotLow(true)
+                .build();
+        PeriodicWorkRequest periodicWorkRequest =
+                new PeriodicWorkRequest.Builder(RNGeofenceRestartWorker.class, PERIODIC_WORK_TIME_INTERVAL, PERIODIC_WORK_TIME_UNIT)
+                        .addTag(PERIODIC_WORK_TAG)
+                        .setConstraints(constraints)
+                        .build();
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
+        Log.v(PERIODIC_WORK_TAG, "Periodic work scheduled");
+    }
+
     public static boolean hasLocationPermission(Context context) {
         int permission = ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION);
         return permission == PackageManager.PERMISSION_GRANTED;
     }
 
-    private static void reRegisterGeofences (ArrayList<RNGeofence> geofences, RNGeofenceHandler handler) {
-        for (final RNGeofence geofence : geofences) {
-            geofence.start(false, handler);
-        }
-    }
-
-    public static void reRegisterErroneousGeofences(Context context) {
-        final String TAG = "RNGeofence";
-        final RNGeofenceDB db = new RNGeofenceDB(context);
-        ArrayList<RNGeofence> erroneousGeofences = db.getAllErroneousGeofences();
-        Log.v(TAG, "Re register error work started: " + erroneousGeofences.size());
-        if(erroneousGeofences.size() > 0) {
-            reRegisterGeofences(erroneousGeofences, new RNGeofenceHandler() {
-                @Override
-                public void onSuccess(String geofenceId) {
-                    Log.v(TAG, "Geofence error successfully reinitialised: " + geofenceId);
-                    db.removeErroneousGeofence(geofenceId);
-                }
-                @Override
-                public void onError(String geofenceId, Exception e) {
-                    Log.v(TAG, "Geofence FAILED reinitialisation: " + geofenceId);
-                    Log.e(TAG, e.getMessage());
-                }
-            });
-        }
-    }
-
-    public static void reRegisterStoredGeofences(Context context) {
-        final String TAG = "RNGeofence";
-        final RNGeofenceDB db = new RNGeofenceDB(context);
-        ArrayList<RNGeofence> storedGeofences = db.getAllGeofences();
-        Log.v(TAG, "Re register work started: " + storedGeofences.size());
-        if (storedGeofences.size() > 0) {
-            reRegisterGeofences(storedGeofences, new RNGeofenceHandler() {
-                @Override
-                public void onSuccess(String geofenceId) {
-                    Log.v(TAG, "Geofence successfully reinitialised: " + geofenceId);
-                    db.removeErroneousGeofence(geofenceId);
-                }
-                @Override
-                public void onError(String geofenceId, Exception e) {
-                    Log.v(TAG, "Geofence FAILED reinitialisation: " + geofenceId);
-                    Log.e(TAG, e.getMessage());
-                    db.saveErroneousGeofence(geofenceId);
-                }
-            });
-        }
-    }
 
     public static boolean isLocationServicesEnabled(Context context) {
         int locationMode = 0;
@@ -182,9 +159,9 @@ public class RNGeofence {
         geofenceList.add(geofence);
     }
 
-    private GeofencingRequest getGeofencingRequest() {
+    private GeofencingRequest getGeofencingRequest(boolean fireInitialTriggers) {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        if (setInitialTriggers) {
+        if (setInitialTriggers && fireInitialTriggers) {
             builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER | GeofencingRequest.INITIAL_TRIGGER_EXIT | dwellTransitionType);
         }
         builder.addGeofences(geofenceList);
@@ -205,9 +182,9 @@ public class RNGeofence {
         db.saveGeofence(this);
     }
 
-    public void start (final Boolean save, final RNGeofenceHandler handler) {
+    public void start (final Boolean save, final Boolean fireInitialTriggers, final RNGeofenceHandler handler) {
         try {
-            geofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent())
+            geofencingClient.addGeofences(getGeofencingRequest(fireInitialTriggers), getGeofencePendingIntent())
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
