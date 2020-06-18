@@ -40,9 +40,12 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
             final RNGeofence rnGeofence = new RNGeofence(getReactApplicationContext(), geoFence);
 
-            rnGeofence.start(rnGeofence.registerOnDeviceRestart, new RNGeofenceHandler() {
+            rnGeofence.start(true, rnGeofence.setInitialTriggers, new RNGeofenceHandler() {
                 @Override
                 public void onSuccess(String geofenceId) {
+                    if (rnGeofence.registerOnDeviceRestart) {
+                        RNGeofence.schedulePeriodicWork(getReactApplicationContext());
+                    }
                     promise.resolve(geofenceId);
                 }
                 @Override
@@ -111,13 +114,6 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void isLocationServicesEnabled(Promise promise) {
         promise.resolve(RNGeofence.isLocationServicesEnabled(getReactApplicationContext()));
-    }
-
-    @ReactMethod
-    public void reRegisterErroneousGeofences() {
-        if (RNGeofence.hasLocationPermission(getReactApplicationContext()) && RNGeofence.isLocationServicesEnabled(getReactApplicationContext())) {
-            RNGeofence.reRegisterErroneousGeofences(getReactApplicationContext());
-        }
     }
 
 }
