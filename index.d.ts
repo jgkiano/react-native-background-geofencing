@@ -16,13 +16,12 @@ export interface RNGeofence {
   setInitialTriggers: boolean;
 }
 
-export enum RNGeofenceEventName {
-  ENTER = 'ENTER',
-  EXIT = 'EXIT',
-  DWELL = 'DWELL',
-  UNKNOWN = 'UNKNOWN',
-  ERROR = 'ERROR',
-}
+export type RNGeofenceEventName =
+  | 'ENTER'
+  | 'EXIT'
+  | 'DWELL'
+  | 'UNKNOWN'
+  | 'ERROR';
 
 export interface RNGeofenceNotification {
   title?: string;
