@@ -58,8 +58,8 @@ public class RNGeofence {
     public static void schedulePeriodicWork(Context context) {
         final String PERIODIC_WORK_NAME = "RNGeofencePeriodicWorker";
         final String PERIODIC_WORK_TAG = "RNGeofencePeriodicWork";
-        final TimeUnit PERIODIC_WORK_TIME_UNIT = TimeUnit.MINUTES;
-        final int PERIODIC_WORK_TIME_INTERVAL = 16;
+        final TimeUnit PERIODIC_WORK_TIME_UNIT = TimeUnit.HOURS;
+        final int PERIODIC_WORK_TIME_INTERVAL = 3;
         Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .setRequiresBatteryNotLow(true)
