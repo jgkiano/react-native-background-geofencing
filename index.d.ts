@@ -56,8 +56,13 @@ export interface RNGeofenceEventData {
   geofenceIds: Array<string>;
 }
 
+export interface RNEventPayload {
+  event: RNGeofenceEventName;
+  data: RNGeofenceEventData;
+}
+
 export interface RNGeofenceJsTask {
-  task: {event: RNGeofenceEventName; data: RNGeofenceEventData};
+  task: (payload: RNEventPayload) => Promise<any>;
 }
 
 export interface RNGeofenceConfiguration {
