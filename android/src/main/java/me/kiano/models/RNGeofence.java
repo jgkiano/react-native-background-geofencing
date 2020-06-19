@@ -53,13 +53,15 @@ public class RNGeofence {
     private final ArrayList<Geofence> geofenceList = new ArrayList<>();
     private GeofencingClient geofencingClient;
     private PendingIntent geofencePendingIntent;
+
+    private static String PERIODIC_WORK_NAME = "RNGeofenceRestartPeriodicWorker";
+    private static String PERIODIC_WORK_TAG = "RNGeofenceRestartPeriodicWork";
+    private static TimeUnit PERIODIC_WORK_TIME_UNIT = TimeUnit.MINUTES;
+    private static int PERIODIC_WORK_TIME_INTERVAL = 16;
+
     private final String TAG = "RNGeofence";
 
     public static void schedulePeriodicWork(Context context) {
-        final String PERIODIC_WORK_NAME = "RNGeofencePeriodicWorker";
-        final String PERIODIC_WORK_TAG = "RNGeofencePeriodicWork";
-        final TimeUnit PERIODIC_WORK_TIME_UNIT = TimeUnit.HOURS;
-        final int PERIODIC_WORK_TIME_INTERVAL = 3;
         Constraints constraints = new Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.CONNECTED)
                 .setRequiresBatteryNotLow(true)
@@ -71,6 +73,11 @@ public class RNGeofence {
                         .build();
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
         Log.v(PERIODIC_WORK_TAG, "Periodic work scheduled");
+    }
+
+    public static void cancelPeriodicWork(Context context) {
+        WorkManager.getInstance(context).cancelUniqueWork(PERIODIC_WORK_NAME);
+        Log.v(PERIODIC_WORK_TAG, "Periodic work canceled");
     }
 
     public static boolean hasLocationPermission(Context context) {
@@ -94,6 +101,12 @@ public class RNGeofence {
             locationProviders = Settings.Secure.getString(context.getContentResolver(),
                     Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
             return !TextUtils.isEmpty(locationProviders);
+        }
+    }
+
+    public static void restartGeofences(Context context, ArrayList<RNGeofence> geofences, RNGeofenceHandler handler) {
+        for(RNGeofence geofence: geofences) {
+            geofence.start(false, false, handler);
         }
     }
 
