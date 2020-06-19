@@ -38,17 +38,21 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
         Log.v(TAG, "GeofenceTransitionsJobIntentService work started");
+        RNGeofenceDB db = new RNGeofenceDB(getApplicationContext());
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
 
         if (geofencingEvent.hasError()) {
+            List<Geofence> geofences = geofencingEvent.getTriggeringGeofences();
+            for(Geofence geofence: geofences) {
+                db.saveErrorGeofence(geofence.getRequestId());
+            }
+            RNGeofence.schedulePeriodicWork(getApplicationContext());
             return;
         }
 
         RNGeofenceData rnGeofenceData = new RNGeofenceData(geofencingEvent);
 
-        RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(getApplicationContext());
-
-        if (rnGeofenceDB.hasWebhookConfiguration()) {
+        if (db.hasWebhookConfiguration()) {
             Constraints constraints = new Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build();
@@ -67,7 +71,7 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
             Log.v(TAG, "Geofence work request queued up");
         }
 
-        if (rnGeofenceDB.hasNotificationConfiguration()) {
+        if (db.hasNotificationConfiguration()) {
             Intent service = new Intent(getApplicationContext(), RNGeoFenceEventJavaScriptTaskService.class);
             Bundle bundle = new Bundle();
             bundle.putString("event", rnGeofenceData.getEventName());
