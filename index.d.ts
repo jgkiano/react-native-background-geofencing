@@ -90,6 +90,7 @@ export interface BackgroundGeofencing {
   add(geofence: RNGeofence): Promise<string>;
   remove(geofenceId: string): Promise<void>;
   configure(configuration: RNGeofenceConfiguration): Promise<void>;
+  init(): void;
 }
 
 declare const RNBackgroundGeofencing: BackgroundGeofencing;
