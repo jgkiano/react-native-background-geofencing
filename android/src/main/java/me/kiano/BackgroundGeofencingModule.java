@@ -22,8 +22,11 @@ import me.kiano.models.RNNotification;
 public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     private String TAG = "BackgroundGeofencing";
 
+    private RNGeofenceDB db;
+
     public BackgroundGeofencingModule(ReactApplicationContext reactContext) {
         super(reactContext);
+        db = new RNGeofenceDB(reactContext);
     }
 
     @Override
@@ -103,6 +106,9 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
                 RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration = new RNGeofenceWebhookConfiguration(webhook);
                 rnGeofenceWebhookConfiguration.save(getReactApplicationContext());
             }
+            if (configuration.hasKey("jsTask")) {
+                db.saveJSTask();
+            }
             promise.resolve(true);
         } catch (JSONException e) {
             promise.reject("geofence_exception", e.getMessage());
@@ -122,7 +128,6 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void init() {
-        final RNGeofenceDB db = new RNGeofenceDB(getReactApplicationContext());
         ArrayList<RNGeofence> geofences = db.getAllErrorGeofences();
 
         if (geofences.isEmpty()) {
@@ -163,7 +168,6 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void restart() {
         if (RNGeofence.hasLocationPermission(getReactApplicationContext()) && RNGeofence.isLocationServicesEnabled(getReactApplicationContext())) {
-            final RNGeofenceDB db = new RNGeofenceDB(getReactApplicationContext());
             ArrayList<RNGeofence> geofences = db.getAllGeofences();
             if (geofences.isEmpty()) {
                 return;

@@ -116,6 +116,7 @@ export default {
         config['webhook'] = {...defaultWebhookConfiguration, ...webhook};
       }
       if (typeof task === 'function') {
+        config['jsTask'] = {hasJSTask: true};
         AppRegistry.registerHeadlessTask('OnGeoFenceEventJavaScript', () => {
           return async ({event, data}) => {
             try {

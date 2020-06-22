@@ -71,7 +71,7 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
             Log.v(TAG, "Geofence work request queued up");
         }
 
-        if (db.hasNotificationConfiguration()) {
+        if (db.hasJSTask()) {
             Intent service = new Intent(getApplicationContext(), RNGeoFenceEventJavaScriptTaskService.class);
             Bundle bundle = new Bundle();
             bundle.putString("event", rnGeofenceData.getEventName());
@@ -79,7 +79,7 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
             Log.v(TAG, "Geofence transition: " + rnGeofenceData.getEventName());
             Log.v(TAG, rnGeofenceData.getEventData());
             service.putExtras(bundle);
-            if (!isAppOnForeground(getApplicationContext()) && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!isAppOnForeground(getApplicationContext()) && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && db.hasNotificationConfiguration()) {
                 getApplicationContext().startForegroundService(service);
             } else {
                 getApplicationContext().startService(service);
