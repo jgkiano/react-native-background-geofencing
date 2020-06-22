@@ -33,6 +33,7 @@ public class RNGeofenceDB {
 
     private String NOTIFICATION_CONFIG_KEY = "RNNotificationDB:v1:configuration";
 
+    private String ERROR_GEOFENCES_PREFIX = "RNErrorGeofenceDB:v1:";
 
     public void saveGeofence (RNGeofence rnGeofence) {
         try {
@@ -65,19 +66,6 @@ public class RNGeofenceDB {
             Log.e(TAG, e.getMessage());
             return savedGeofences;
         }
-    }
-
-    public ArrayList<RNGeofence> getAllRestartGeofences() {
-        ArrayList<RNGeofence> geofences = getAllGeofences();
-        ArrayList<RNGeofence> restartGeofences = new ArrayList<>();
-        if (geofences.size() > 0) {
-            for(RNGeofence geofence: geofences) {
-                if (geofence.registerOnDeviceRestart) {
-                    restartGeofences.add(geofence);
-                }
-            }
-        }
-        return restartGeofences;
     }
 
     public RNGeofence getGeofence(String id) {
@@ -173,4 +161,61 @@ public class RNGeofenceDB {
         }
     }
 
+    public void saveErrorGeofence(String id) {
+        try {
+            RNGeofence geofence = getGeofence(id);
+            if (geofence != null) {
+                DB db = DBFactory.open(context, DB_NAME);
+                db.put(ERROR_GEOFENCES_PREFIX + geofence.id, geofence.toJSON());
+                db.close();
+                Log.v(TAG, "Geofence error successfully saved to DB: " + geofence.id);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ArrayList<RNGeofence> getAllErrorGeofences() {
+        ArrayList<RNGeofence> geofences = new ArrayList<>();
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            String[] keys = db.findKeys(ERROR_GEOFENCES_PREFIX);
+            for(String key: keys) {
+                String savedGeofenceJSON = db.get(key);
+                RNGeofence geofence = new RNGeofence(context, new JSONObject(savedGeofenceJSON));
+                if (geofence.isExpired()) {
+                    removeErrorGeofence(geofence.id);
+                } else {
+                    geofences.add(geofence);
+                }
+            }
+            return geofences;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return geofences;
+        }
+    }
+
+    public void removeErrorGeofence(String id) {
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            db.del(ERROR_GEOFENCES_PREFIX + id);
+            db.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void removeAllErrorGeofence() {
+        try {
+            ArrayList<RNGeofence> geofences = getAllErrorGeofences();
+            if (!geofences.isEmpty()) {
+                for(RNGeofence geofence: geofences) {
+                    removeErrorGeofence(geofence.id);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

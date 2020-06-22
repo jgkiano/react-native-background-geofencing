@@ -5,6 +5,8 @@ import {name as appName} from './app.json';
 import task from './src/services/task';
 import secrets from './secrets.json';
 
+RNBackgroundGeofencing.init();
+
 const notification = {
   title: 'Starting set up',
   text: 'This will only take a sec..',

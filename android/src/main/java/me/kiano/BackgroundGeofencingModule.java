@@ -1,5 +1,8 @@
 package me.kiano;
 
+import android.os.Handler;
+import android.util.Log;
+
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -8,12 +11,16 @@ import com.facebook.react.bridge.ReadableMap;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
+
+import me.kiano.database.RNGeofenceDB;
 import me.kiano.interfaces.RNGeofenceHandler;
 import me.kiano.models.RNGeofence;
 import me.kiano.models.RNGeofenceWebhookConfiguration;
 import me.kiano.models.RNNotification;
 
 public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
+    private String TAG = "BackgroundGeofencing";
 
     public BackgroundGeofencingModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -43,9 +50,6 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
             rnGeofence.start(true, rnGeofence.setInitialTriggers, new RNGeofenceHandler() {
                 @Override
                 public void onSuccess(String geofenceId) {
-                    if (rnGeofence.registerOnDeviceRestart) {
-                        RNGeofence.schedulePeriodicWork(getReactApplicationContext());
-                    }
                     promise.resolve(geofenceId);
                 }
                 @Override
@@ -114,6 +118,73 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void isLocationServicesEnabled(Promise promise) {
         promise.resolve(RNGeofence.isLocationServicesEnabled(getReactApplicationContext()));
+    }
+
+    @ReactMethod
+    public void init() {
+        final RNGeofenceDB db = new RNGeofenceDB(getReactApplicationContext());
+        ArrayList<RNGeofence> geofences = db.getAllErrorGeofences();
+
+        if (geofences.isEmpty()) {
+            Log.v(TAG, "No bad geofences yet, cancelling any existing jobs");
+            RNGeofence.cancelPeriodicWork(getReactApplicationContext());
+            return;
+        }
+
+        if (RNGeofence.hasLocationPermission(getReactApplicationContext()) && RNGeofence.isLocationServicesEnabled(getReactApplicationContext())) {
+            RNGeofence.restartGeofences(getReactApplicationContext(), geofences, new RNGeofenceHandler() {
+                @Override
+                public void onSuccess(final String geofenceId) {
+                    Log.v(TAG, "Successfully re-registered geofence in init: " + geofenceId);
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        public void run() {
+                            db.removeErrorGeofence(geofenceId);
+                        }
+                    }, 10000);   //10 seconds
+                }
+
+                @Override
+                public void onError(final String geofenceId, Exception e) {
+                    Log.v(TAG, "Failed to re-register geofence in init will try later: " + geofenceId);
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        public void run() {
+                            db.saveErrorGeofence(geofenceId);
+                            RNGeofence.schedulePeriodicWork(getReactApplicationContext());
+                        }
+                    }, 10000);   //10 seconds
+                    e.printStackTrace();
+                }
+            });
+        }
+    }
+
+    @ReactMethod
+    public void restart() {
+        if (RNGeofence.hasLocationPermission(getReactApplicationContext()) && RNGeofence.isLocationServicesEnabled(getReactApplicationContext())) {
+            final RNGeofenceDB db = new RNGeofenceDB(getReactApplicationContext());
+            ArrayList<RNGeofence> geofences = db.getAllGeofences();
+            if (geofences.isEmpty()) {
+                return;
+            }
+            for(RNGeofence geofence: geofences) {
+                geofence.start(true, geofence.setInitialTriggers, new RNGeofenceHandler() {
+                    @Override
+                    public void onSuccess(String geofenceId) {
+                        Log.v(TAG, "Successfully restarted geofence: " + geofenceId);
+                        db.removeErrorGeofence(geofenceId);
+                    }
+
+                    @Override
+                    public void onError(String geofenceId, Exception e) {
+                        Log.v(TAG, "Failed to restart geofence: " + geofenceId + " Will try later");
+                        db.saveErrorGeofence(geofenceId);
+                        RNGeofence.schedulePeriodicWork(getReactApplicationContext());
+                    }
+                });
+            }
+        }
     }
 
 }

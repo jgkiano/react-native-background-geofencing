@@ -134,4 +134,12 @@ export default {
       throw error;
     }
   },
+
+  init() {
+    BackgroundGeofencing.init();
+  },
+
+  restart() {
+    BackgroundGeofencing.restart();
+  },
 };

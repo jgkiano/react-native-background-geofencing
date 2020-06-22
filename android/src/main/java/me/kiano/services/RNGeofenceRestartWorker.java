@@ -17,30 +17,29 @@ public class RNGeofenceRestartWorker extends Worker {
     final private String TAG = "RNGeofenceRestartWorker";
     public RNGeofenceRestartWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
+        Log.v(TAG, "Starting periodic work..");
     }
 
     @NonNull
     @Override
     public Result doWork() {
-        Context context = getApplicationContext();
-        if (RNGeofence.hasLocationPermission(context) && RNGeofence.isLocationServicesEnabled(context)) {
-            RNGeofenceDB db = new RNGeofenceDB(getApplicationContext());
-            ArrayList<RNGeofence> geofences = db.getAllRestartGeofences();
-            if (geofences.size() > 0) {
-                for (RNGeofence geofence : geofences) {
-                    geofence.start(false, false, new RNGeofenceHandler() {
-                        @Override
-                        public void onSuccess(String geofenceId) {
-                            Log.v(TAG, "successfully re-registered: " + geofenceId);
-                        }
-                        @Override
-                        public void onError(String geofenceId, Exception e) {
-                            Log.v(TAG, "failed to re-register: " + geofenceId);
-                            e.printStackTrace();
-                        }
-                    });
+        final RNGeofenceDB db = new RNGeofenceDB(getApplicationContext());
+        ArrayList<RNGeofence> geofences = db.getAllErrorGeofences();
+        if (geofences.isEmpty()) {
+            Log.v(TAG, "No more error geofences to register, canceling job");
+            RNGeofence.cancelPeriodicWork(getApplicationContext());
+        } else if (RNGeofence.isLocationServicesEnabled(getApplicationContext()) && RNGeofence.hasLocationPermission(getApplicationContext())) {
+            RNGeofence.restartGeofences(getApplicationContext(), geofences, new RNGeofenceHandler() {
+                @Override
+                public void onSuccess(String geofenceId) {
+                    db.removeErrorGeofence(geofenceId);
+                    Log.v(TAG, "Successfully re-registered error geofence: " + geofenceId);
                 }
-            }
+                @Override
+                public void onError(String geofenceId, Exception e) {
+                    Log.v(TAG, "Failed to re-register error geofence: " + geofenceId);
+                }
+            });
         }
         return Result.success();
     }
