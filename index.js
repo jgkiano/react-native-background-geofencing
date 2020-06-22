@@ -68,6 +68,10 @@ export const isLocationServicesEnabled = () => {
   return BackgroundGeofencing.isLocationServicesEnabled();
 };
 
+export const openLocationServicesSettings = () => {
+  BackgroundGeofencing.openLocationServicesSettings();
+};
+
 export default {
   async add(geofence = {}) {
     const {id, lat, lng} = geofence;
