@@ -1,6 +1,9 @@
 package me.kiano;
 
+import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.facebook.react.bridge.Promise;
@@ -208,6 +211,12 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
                 });
             }
         }
+    }
+
+    @ReactMethod
+    public void openLocationServicesSettings() {
+        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        getReactApplicationContext().startActivityForResult(intent, 516, new Bundle());
     }
 
 }
