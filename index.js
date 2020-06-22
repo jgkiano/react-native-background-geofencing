@@ -138,4 +138,8 @@ export default {
   init() {
     BackgroundGeofencing.init();
   },
+
+  restart() {
+    BackgroundGeofencing.restart();
+  },
 };
