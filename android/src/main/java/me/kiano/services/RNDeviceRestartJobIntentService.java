@@ -24,9 +24,6 @@ public class RNDeviceRestartJobIntentService extends JobIntentService {
 
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
-        // cancel any existing jobs
-        RNGeofence.cancelPeriodicWork(getApplicationContext());
-
         // get db instance
         final RNGeofenceDB db = new RNGeofenceDB(getApplicationContext());
 
