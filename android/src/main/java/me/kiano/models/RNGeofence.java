@@ -56,8 +56,8 @@ public class RNGeofence {
 
     private static String PERIODIC_WORK_NAME = "RNGeofenceRestartPeriodicWorker";
     private static String PERIODIC_WORK_TAG = "RNGeofenceRestartPeriodicWork";
-    private static TimeUnit PERIODIC_WORK_TIME_UNIT = TimeUnit.MINUTES;
-    private static int PERIODIC_WORK_TIME_INTERVAL = 16;
+    private static TimeUnit PERIODIC_WORK_TIME_UNIT = TimeUnit.HOURS;
+    private static int PERIODIC_WORK_TIME_INTERVAL = 3;
 
     private final String TAG = "RNGeofence";
 
