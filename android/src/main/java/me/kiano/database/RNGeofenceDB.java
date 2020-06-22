@@ -35,6 +35,8 @@ public class RNGeofenceDB {
 
     private String ERROR_GEOFENCES_PREFIX = "RNErrorGeofenceDB:v1:";
 
+    private String JS_TASK_KEY = "RNJSTaskDB:v1:hasJsTask";
+
     public void saveGeofence (RNGeofence rnGeofence) {
         try {
             DB db = DBFactory.open(context, DB_NAME);
@@ -217,5 +219,28 @@ public class RNGeofenceDB {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void saveJSTask() {
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            db.put(JS_TASK_KEY, true);
+            db.close();
+            Log.v(TAG, "JS task bool saved in DB");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean hasJSTask() {
+        try {
+            DB db = DBFactory.open(context, DB_NAME);
+            boolean exists = db.exists(JS_TASK_KEY);
+            db.close();
+            return exists;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }
