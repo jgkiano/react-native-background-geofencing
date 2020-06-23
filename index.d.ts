@@ -84,6 +84,7 @@ export function configureWebhook(webhook: RNGeofenceWebhook): Promise<void>;
 
 export function configureJSTask(jsTask: RNGeofenceJsTask): void;
 
+export function openLocationServicesSettings(): void;
 //-- default export --//
 
 export interface BackgroundGeofencing {
