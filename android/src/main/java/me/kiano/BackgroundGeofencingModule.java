@@ -29,12 +29,9 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
     private RNGeofenceDB db;
 
-    private ReactApplicationContext reactContext;
-
     public BackgroundGeofencingModule(ReactApplicationContext reactContext) {
         super(reactContext);
         this.db = new RNGeofenceDB(reactContext);
-        this.reactContext = reactContext;
     }
 
     @Override
@@ -46,12 +43,12 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     public void add(final ReadableMap geoFence, final Promise promise) {
         try {
 
-            if (!RNGeofence.hasLocationPermission(reactContext)) {
+            if (!RNGeofence.hasLocationPermission(getReactApplicationContext())) {
                 promise.reject("permission_denied", "Access fine location is not permitted");
                 return;
             }
 
-            if (!RNGeofence.isLocationServicesEnabled(reactContext)) {
+            if (!RNGeofence.isLocationServicesEnabled(getReactApplicationContext())) {
                 RNLocationServicesSettings rnLocationServicesSettings = new RNLocationServicesSettings(getCurrentActivity(), getReactApplicationContext(), new RNLocationServicesRequestHandler() {
                     @Override
                     public void onSuccess() {
