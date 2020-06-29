@@ -91,7 +91,7 @@ export const hasLocationPermission = () => {
   return isLocationPermissionGranted();
 };
 
-export const requestLocationPermission = async (rational = {}) => {
+export const requestLocationPermission = async (rationale = {}) => {
   try {
     const hasPermission = await BackgroundGeofencing.hasLocationPermission();
     if (hasPermission) {
@@ -99,7 +99,7 @@ export const requestLocationPermission = async (rational = {}) => {
     }
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      rational,
+      rationale,
     );
     if (granted === PermissionsAndroid.RESULTS.GRANTED) {
       return true;
