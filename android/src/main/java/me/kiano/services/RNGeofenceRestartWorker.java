@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import me.kiano.database.RNGeofenceDB;
 import me.kiano.interfaces.RNGeofenceHandler;
 import me.kiano.models.RNGeofence;
+import me.kiano.models.RNLocationServicesSettings;
 
 public class RNGeofenceRestartWorker extends Worker {
     final private String TAG = "RNGeofenceRestartWorker";
@@ -28,7 +29,7 @@ public class RNGeofenceRestartWorker extends Worker {
         if (geofences.isEmpty()) {
             Log.v(TAG, "No more error geofences to register, canceling job");
             RNGeofence.cancelPeriodicWork(getApplicationContext());
-        } else if (RNGeofence.isLocationServicesEnabled(getApplicationContext()) && RNGeofence.hasLocationPermission(getApplicationContext())) {
+        } else if (RNLocationServicesSettings.isLocationServicesEnabled(getApplicationContext()) && RNLocationServicesSettings.hasLocationPermission(getApplicationContext())) {
             RNGeofence.restartGeofences(getApplicationContext(), geofences, new RNGeofenceHandler() {
                 @Override
                 public void onSuccess(String geofenceId) {

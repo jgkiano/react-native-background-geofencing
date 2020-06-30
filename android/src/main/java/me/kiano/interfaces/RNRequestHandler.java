@@ -1,6 +1,6 @@
 package me.kiano.interfaces;
 
-public interface RNLocationServicesRequestHandler {
+public interface RNRequestHandler {
     void onSuccess();
     void onError();
 }

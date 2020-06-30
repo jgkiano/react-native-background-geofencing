@@ -70,11 +70,16 @@ export interface RNGeofenceConfiguration {
   jsTask?: RNGeofenceJsTask;
 }
 
+export interface LocationPermissionRational {
+  title?: string;
+  message?: string;
+  buttonNeutral?: string;
+  buttonNegative?: string;
+  buttonPositive?: string;
+}
 //-- methods --//
 
 export function isLocationServicesEnabled(): Promise<boolean>;
-
-export function hasLocationPermission(): Promise<boolean>;
 
 export function configureNotification(
   notification: RNGeofenceNotification,
@@ -85,6 +90,18 @@ export function configureWebhook(webhook: RNGeofenceWebhook): Promise<void>;
 export function configureJSTask(jsTask: RNGeofenceJsTask): void;
 
 export function openLocationServicesSettings(): void;
+
+export function requestEnableLocationServices(): Promise<boolean>;
+
+export function isGooglePlayServicesAvailable(): Promise<boolean>;
+
+export function requestEnableGooglePlayServices(): Promise<boolean>;
+
+export function requestLocationPermission(
+  rationale?: LocationPermissionRational,
+): Promise<boolean>;
+
+export function isLocationPermissionGranted(): Promise<boolean>;
 //-- default export --//
 
 export interface BackgroundGeofencing {

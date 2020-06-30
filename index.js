@@ -1,5 +1,5 @@
 import {NativeModules, Platform} from 'react-native';
-import {AppRegistry} from 'react-native';
+import {AppRegistry, PermissionsAndroid} from 'react-native';
 
 const {BackgroundGeofencing} = NativeModules;
 
@@ -48,7 +48,7 @@ export const configureNotification = async (notification = {}) => {
   await BackgroundGeofencing.configureNotification(notification);
 };
 
-export const hasLocationPermission = () => {
+export const isLocationPermissionGranted = () => {
   if (Platform.OS !== 'android') {
     console.warn(
       'hasLocationPermission function only works on Android platform',
@@ -70,6 +70,45 @@ export const isLocationServicesEnabled = () => {
 
 export const openLocationServicesSettings = () => {
   BackgroundGeofencing.openLocationServicesSettings();
+};
+
+export const requestEnableLocationServices = () => {
+  return BackgroundGeofencing.requestEnableLocationServices();
+};
+
+export const isGooglePlayServicesAvailable = () => {
+  return BackgroundGeofencing.isGooglePlayServicesAvailable();
+};
+
+export const requestEnableGooglePlayServices = () => {
+  return BackgroundGeofencing.requestEnableGooglePlayServices();
+};
+
+export const hasLocationPermission = () => {
+  console.warn(
+    '[depreication warning]: hasLocationPermission has been depricated in favor for isLocationPermissionGranted',
+  );
+  return isLocationPermissionGranted();
+};
+
+export const requestLocationPermission = async (rationale = {}) => {
+  try {
+    const hasPermission = await BackgroundGeofencing.hasLocationPermission();
+    if (hasPermission) {
+      return true;
+    }
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      rationale,
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.warn(error);
+    return false;
+  }
 };
 
 export default {
