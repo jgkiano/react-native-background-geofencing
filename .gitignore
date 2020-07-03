@@ -119,3 +119,7 @@ buck-out/
 /ios/Pods/
 example/android/app/google-services.json
 example/ios/GoogleService-Info.plist
+
+dist/
+
+dist/*/**
