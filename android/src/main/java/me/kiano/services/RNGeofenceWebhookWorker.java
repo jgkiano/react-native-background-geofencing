@@ -58,15 +58,6 @@ public class RNGeofenceWebhookWorker extends Worker {
             String data = getInputData().getString("data");
             Log.v(TAG, "Sending event: " + event);
             Log.v(TAG, data);
-            ArrayList<Object> excludes = rnGeofenceWebhookConfiguration.getExclude();
-            JSONObject jsonData = new JSONObject(data);
-            Iterator iterator = excludes.iterator();
-            while (iterator.hasNext()) {
-                String item = (String) iterator.next();
-                if (jsonData.has(item)) {
-                    jsonData.remove(item);
-                }
-            }
             JSONObject geofenceEventData = new JSONObject(data);
             JSONObject payload = new JSONObject();
             JSONArray transits = new JSONArray();
