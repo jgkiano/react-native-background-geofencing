@@ -1,4 +1,7 @@
 {
+  "name": "react-native-background-geofencing",
+  "title": "React Native Background Geofencing",
+  "description": "A reliable React Native Geofencing library, that works in the background and survives device restarts",
   "version": "0.1.0",
   "license": "MIT",
   "main": "dist/index.js",
@@ -54,8 +57,6 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "react-native-background-geofencing",
-  "description": "A reliable React Native Geofencing library, that works in the background and survives device restarts",
   "module": "dist/react-native-background-geofencing.esm.js",
   "devDependencies": {
     "@types/react-native": "^0.62.16",
