@@ -4,11 +4,9 @@ import android.content.Context;
 
 import com.facebook.react.bridge.ReadableMap;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -19,7 +17,6 @@ import okhttp3.Headers;
 public class RNGeofenceWebhookConfiguration {
     private String url;
     private long timeout;
-    private ArrayList<Object> exclude;
     private HashMap<String, Object> headersHashMap;
     private JSONObject meta;
     private long DEFAULT_TIMEOUT = 15000;
@@ -28,7 +25,6 @@ public class RNGeofenceWebhookConfiguration {
         url = configuration.hasKey("url") ? configuration.getString("url") : null;
         headersHashMap = configuration.hasKey("headers") ? configuration.getMap("headers").toHashMap() : new HashMap<String, Object>();
         timeout = configuration.hasKey("timeout") ? configuration.getInt("timeout") : DEFAULT_TIMEOUT;
-        exclude = configuration.hasKey("exclude") ? configuration.getArray("exclude").toArrayList() : new ArrayList<>();
         meta = configuration.hasKey("meta") ? new JSONObject(configuration.getMap("meta").toHashMap()) : null;
     }
 
@@ -37,16 +33,11 @@ public class RNGeofenceWebhookConfiguration {
         timeout = configuration.has("timeout") ? configuration.getLong("timeout") : DEFAULT_TIMEOUT;
         meta = configuration.has("meta") ? configuration.getJSONObject("meta") : null;
         headersHashMap = new HashMap<>();
-        exclude = new ArrayList<>();
-        JSONArray excludeJSONArray = configuration.has("exclude") ? configuration.getJSONArray("exclude") : new JSONArray();
         JSONObject headersJSONObject = configuration.has("headers") ? configuration.getJSONObject("headers") : new JSONObject();
         Iterator<String> hIterator = headersJSONObject.keys();
         while(hIterator.hasNext()) {
             String key = hIterator.next();
             headersHashMap.put(key, headersJSONObject.getString(key));
-        }
-        for (int i = 0; i < excludeJSONArray.length(); i++) {
-            exclude.add(excludeJSONArray.getString(i));
         }
     }
 
@@ -58,10 +49,6 @@ public class RNGeofenceWebhookConfiguration {
         return timeout;
     }
 
-    public ArrayList<Object> getExclude() {
-        return exclude;
-    }
-
     public void save(Context context) {
         RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(context);
         rnGeofenceDB.saveWebhookConfiguration(this);
@@ -71,7 +58,6 @@ public class RNGeofenceWebhookConfiguration {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("url", url);
         jsonObject.put("headers", new JSONObject(headersHashMap));
-        jsonObject.put("exclude", new JSONArray(exclude));
         jsonObject.put("timeout", timeout);
         jsonObject.put("meta", meta);
         if (meta != null) {
