@@ -21,6 +21,7 @@ import org.json.JSONException;
 import me.kiano.interfaces.RNGeofenceHandler;
 import me.kiano.models.RNGeofence;
 import me.kiano.models.RNGeofenceWebhookConfiguration;
+import me.kiano.models.RNLocationService;
 import me.kiano.models.RNNotification;
 
 public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
@@ -110,4 +111,9 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         promise.resolve(true);
     }
 
+    @ReactMethod
+    public void openLocationServicesSettings(Promise promise) {
+        RNLocationService.openLocationServicesSettings(getReactApplicationContext());
+        promise.resolve(true);
+    }
 }
