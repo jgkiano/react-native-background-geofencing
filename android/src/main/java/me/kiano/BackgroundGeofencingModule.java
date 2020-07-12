@@ -154,4 +154,24 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
             });
         }
     }
+
+    @ReactMethod
+    public void requestEnableGooglePlayServices (final Promise promise) {
+        if (RNGooglePlayService.isGooglePlayServicesAvailable(getReactApplicationContext())) {
+            promise.resolve(true);
+        } else {
+            RNGooglePlayService rnGooglePlayService = new RNGooglePlayService(getCurrentActivity(), getReactApplicationContext());
+            rnGooglePlayService.requestEnableGooglePlayServices(new RNRequestHandler() {
+                @Override
+                public void onSuccess() {
+                    promise.resolve(true);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    promise.resolve(false);
+                }
+            });
+        }
+    }
 }
