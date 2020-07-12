@@ -48,11 +48,8 @@ public class RNLocationService {
             @Override
             public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent data) {
                 Log.v(TAG, "Result received. Request code: " + requestCode + ", Result code: " + resultCode);
-                if (invokedHandler) {
-                    return;
-                }
-                invokedHandler = true;
-                if (requestCode == Constant.ENABLE_LOCATION_SERVICES_REQUEST_CODE) {
+                if (requestCode == Constant.ENABLE_LOCATION_SERVICES_REQUEST_CODE && !invokedHandler) {
+                    invokedHandler = true;
                     if (resultCode == Activity.RESULT_OK) {
                         handler.postDelayed(new Runnable() {
                             @Override
