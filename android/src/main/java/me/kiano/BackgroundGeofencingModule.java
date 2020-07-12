@@ -19,6 +19,7 @@ import com.facebook.react.bridge.ReadableMap;
 import org.json.JSONException;
 
 import me.kiano.interfaces.RNGeofenceHandler;
+import me.kiano.interfaces.RNRequestHandler;
 import me.kiano.models.RNGeofence;
 import me.kiano.models.RNGeofenceWebhookConfiguration;
 import me.kiano.models.RNGooglePlayService;
@@ -119,6 +120,11 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void isLocationPermissionGranted(Promise promise) {
+        promise.resolve(RNLocationService.isLocationPermissionGranted(getReactApplicationContext()));
+    }
+
+    @ReactMethod
     public void isLocationServicesEnabled(Promise promise) {
         promise.resolve(RNLocationService.isLocationServicesEnabled(getReactApplicationContext()));
     }
@@ -126,5 +132,26 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void isGooglePlayServicesAvailable(Promise promise) {
         promise.resolve(RNGooglePlayService.isGooglePlayServicesAvailable(getReactApplicationContext()));
+    }
+
+    @ReactMethod
+    public void requestEnableLocationServices(final Promise promise) {
+        if (RNLocationService.isLocationServicesEnabled(getReactApplicationContext())) {
+            promise.resolve(true);
+        } else {
+            RNLocationService rnLocationService = new RNLocationService(getCurrentActivity(), getReactApplicationContext());
+            rnLocationService.requestEnableLocationServices(new RNRequestHandler() {
+                @Override
+                public void onSuccess() {
+                    promise.resolve(true);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    promise.resolve(false);
+                    e.printStackTrace();
+                }
+            });
+        }
     }
 }
