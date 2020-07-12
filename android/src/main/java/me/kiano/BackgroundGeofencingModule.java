@@ -116,4 +116,9 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         RNLocationService.openLocationServicesSettings(getReactApplicationContext());
         promise.resolve(true);
     }
+
+    @ReactMethod
+    public void isLocationServicesEnabled(Promise promise) {
+        promise.resolve(RNLocationService.isLocationServicesEnabled(getReactApplicationContext()));
+    }
 }
