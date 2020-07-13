@@ -4,7 +4,7 @@ import {Platform} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import {Provider} from './src/context';
-import {configureWebhook} from 'react-native-background-geofencing';
+import {requestLocationPermission} from 'react-native-background-geofencing';
 
 import HomeScreen from './src/screens/Home';
 import HistoryScreen from './src/screens/History';
@@ -19,7 +19,7 @@ const Stack = createStackNavigator();
 class App extends React.Component {
   constructor(props) {
     super(props);
-    // this.askPermissions();
+    requestLocationPermission();
   }
 
   // askPermissions = async () => {
