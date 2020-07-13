@@ -11,13 +11,10 @@ import androidx.work.WorkerParameters;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 import me.kiano.database.RNGeofenceDB;
-import me.kiano.models.RNGeofenceWebhookConfiguration;
+import me.kiano.models.RNGeofenceWebhook;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -30,17 +27,17 @@ public class RNGeofenceWebhookWorker extends Worker {
 
     private String TAG = "GeofenceUploadWorker";
 
-    private RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration;
+    private RNGeofenceWebhook rnGeofenceWebhook;
 
     public RNGeofenceWebhookWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
         try {
             RNGeofenceDB rnGeofenceDB = new RNGeofenceDB(getApplicationContext());
-            rnGeofenceWebhookConfiguration = rnGeofenceDB.getWebhookConfiguration();
+            rnGeofenceWebhook = rnGeofenceDB.getWebhookConfiguration();
             httpClient = new OkHttpClient.Builder()
-                    .connectTimeout(rnGeofenceWebhookConfiguration.getTimeout(), TimeUnit.MILLISECONDS)
-                    .writeTimeout(rnGeofenceWebhookConfiguration.getTimeout(), TimeUnit.MILLISECONDS)
-                    .readTimeout(rnGeofenceWebhookConfiguration.getTimeout(), TimeUnit.MILLISECONDS).build();
+                    .connectTimeout(rnGeofenceWebhook.getTimeout(), TimeUnit.MILLISECONDS)
+                    .writeTimeout(rnGeofenceWebhook.getTimeout(), TimeUnit.MILLISECONDS)
+                    .readTimeout(rnGeofenceWebhook.getTimeout(), TimeUnit.MILLISECONDS).build();
         } catch (Exception e) {
             Log.e(TAG, e.getMessage());
         }
@@ -48,7 +45,7 @@ public class RNGeofenceWebhookWorker extends Worker {
 
     @Override
     public Result doWork() {
-        if (httpClient == null || rnGeofenceWebhookConfiguration == null) {
+        if (httpClient == null || rnGeofenceWebhook == null) {
             Log.v(TAG, "Unable to call webhook. Missing configuration");
             return Result.success();
         }
@@ -102,8 +99,8 @@ public class RNGeofenceWebhookWorker extends Worker {
             transit.put("device_manufacturer", Build.MANUFACTURER);
             transit.put("device_model", Build.MODEL);
 
-            if (rnGeofenceWebhookConfiguration.getMeta() != null) {
-                payload.put("meta", rnGeofenceWebhookConfiguration.getMeta());
+            if (rnGeofenceWebhook.getMeta() != null) {
+                payload.put("meta", rnGeofenceWebhook.getMeta());
             }
 
             transits.put(transit);
@@ -112,8 +109,8 @@ public class RNGeofenceWebhookWorker extends Worker {
             Log.v(TAG, payload.toString());
             RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), payload.toString());
             Request request = new Request.Builder()
-                    .url(rnGeofenceWebhookConfiguration.getUrl())
-                    .headers(rnGeofenceWebhookConfiguration.getHeaders())
+                    .url(rnGeofenceWebhook.getUrl())
+                    .headers(rnGeofenceWebhook.getHeaders())
                     .post(requestBody)
                     .build();
             Response response = httpClient.newCall(request).execute();

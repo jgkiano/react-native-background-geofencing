@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 import me.kiano.models.Constant;
 import me.kiano.models.RNGeofence;
-import me.kiano.models.RNGeofenceWebhookConfiguration;
+import me.kiano.models.RNGeofenceWebhook;
 import me.kiano.models.RNNotification;
 
 public class RNGeofenceDB {
@@ -69,23 +69,23 @@ public class RNGeofenceDB {
         }
     }
 
-    public void saveWebhookConfiguration(RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration) {
+    public void saveWebhookConfiguration(RNGeofenceWebhook rnGeofenceWebhook) {
         try {
             DB db = DBFactory.open(context, Constant.RN_DB_NAME);
-            db.put(Constant.RN_WEBHOOK_CONFIG_KEY, rnGeofenceWebhookConfiguration.toJSON());
+            db.put(Constant.RN_WEBHOOK_CONFIG_KEY, rnGeofenceWebhook.toJSON());
             db.close();
-            Log.v(TAG, "Geofence webhook configuration saved: " + rnGeofenceWebhookConfiguration.getUrl());
+            Log.v(TAG, "Geofence webhook configuration saved: " + rnGeofenceWebhook.getUrl());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public RNGeofenceWebhookConfiguration getWebhookConfiguration() {
+    public RNGeofenceWebhook getWebhookConfiguration() {
         try {
             DB db = DBFactory.open(context, Constant.RN_DB_NAME);
-            RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration = new RNGeofenceWebhookConfiguration(new JSONObject(db.get(Constant.RN_WEBHOOK_CONFIG_KEY)));
+            RNGeofenceWebhook rnGeofenceWebhook = new RNGeofenceWebhook(new JSONObject(db.get(Constant.RN_WEBHOOK_CONFIG_KEY)));
             db.close();
-            return rnGeofenceWebhookConfiguration;
+            return rnGeofenceWebhook;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

@@ -6,7 +6,6 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
@@ -21,7 +20,7 @@ import org.json.JSONException;
 import me.kiano.interfaces.RNGeofenceHandler;
 import me.kiano.interfaces.RNRequestHandler;
 import me.kiano.models.RNGeofence;
-import me.kiano.models.RNGeofenceWebhookConfiguration;
+import me.kiano.models.RNGeofenceWebhook;
 import me.kiano.models.RNGooglePlayService;
 import me.kiano.models.RNLocationService;
 import me.kiano.models.RNNotification;
@@ -96,8 +95,8 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void configureWebhook (ReadableMap configureWebhook, final Promise promise) {
         try {
-            RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration = new RNGeofenceWebhookConfiguration(configureWebhook);
-            rnGeofenceWebhookConfiguration.save(getReactApplicationContext());
+            RNGeofenceWebhook rnGeofenceWebhook = new RNGeofenceWebhook(configureWebhook);
+            rnGeofenceWebhook.save(getReactApplicationContext());
             promise.resolve(true);
         } catch (JSONException e) {
             promise.reject("geofence_exception", e.getMessage());

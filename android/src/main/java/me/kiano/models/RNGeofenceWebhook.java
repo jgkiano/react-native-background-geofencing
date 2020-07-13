@@ -14,20 +14,20 @@ import java.util.Map;
 import me.kiano.database.RNGeofenceDB;
 import okhttp3.Headers;
 
-public class RNGeofenceWebhookConfiguration {
+public class RNGeofenceWebhook {
     private String url;
     private long timeout;
     private HashMap<String, Object> headersHashMap;
     private JSONObject meta;
 
-    public RNGeofenceWebhookConfiguration(ReadableMap configuration) throws JSONException {
+    public RNGeofenceWebhook(ReadableMap configuration) throws JSONException {
         url = configuration.hasKey("url") ? configuration.getString("url") : null;
         headersHashMap = configuration.hasKey("headers") ? configuration.getMap("headers").toHashMap() : new HashMap<String, Object>();
         timeout = configuration.hasKey("timeout") ? configuration.getInt("timeout") : Constant.DEFAULT_WEBHOOK_TIMEOUT;
         meta = configuration.hasKey("meta") ? new JSONObject(configuration.getMap("meta").toHashMap()) : null;
     }
 
-    public RNGeofenceWebhookConfiguration (JSONObject configuration) throws JSONException {
+    public RNGeofenceWebhook(JSONObject configuration) throws JSONException {
         url = configuration.has("url") ? configuration.getString("url") : null;
         timeout = configuration.has("timeout") ? configuration.getLong("timeout") : Constant.DEFAULT_WEBHOOK_TIMEOUT;
         meta = configuration.has("meta") ? configuration.getJSONObject("meta") : null;
