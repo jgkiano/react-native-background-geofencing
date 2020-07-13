@@ -28,7 +28,7 @@ public class RNGeofenceWebhookWorker extends Worker {
     public RNGeofenceWebhookWorker(@NonNull Context context, @NonNull WorkerParameters params) {
         super(context, params);
         try {
-            String rnGeofenceJSONWebhook = getInputData().getString(Constant.RN_RN_UPLOAD_WORK_WEBHOOK_CONFIG);
+            String rnGeofenceJSONWebhook = getInputData().getString(Constant.RN_UPLOAD_WORK_WEBHOOK_CONFIG);
             rnGeofenceWebhook = new RNGeofenceWebhook(new JSONObject(rnGeofenceJSONWebhook));
             httpClient = new OkHttpClient.Builder()
                     .connectTimeout(rnGeofenceWebhook.getTimeout(), TimeUnit.MILLISECONDS)
@@ -50,7 +50,7 @@ public class RNGeofenceWebhookWorker extends Worker {
 
         try {
             // retrieve the geofence transition
-            String rnGeofenceJSONTransition = getInputData().getString("RNGeofenceJSONTransition");
+            String rnGeofenceJSONTransition = getInputData().getString(Constant.RN_UPLOAD_WORK_GEOFENCE_TRANSITION);
 
             // construct the payload object
             JSONObject payload = new JSONObject(rnGeofenceJSONTransition);
