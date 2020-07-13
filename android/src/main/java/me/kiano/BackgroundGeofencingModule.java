@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 
 import androidx.core.app.ActivityCompat;
 
@@ -36,6 +37,7 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         rnGeofence.start(true, new RNGeofenceHandler() {
             @Override
             public void onSuccess(String geofenceId) {
+                Log.v("RNBGeofencing", "Geofence successfully added");
                 promise.resolve(geofenceId);
             }
             @Override
