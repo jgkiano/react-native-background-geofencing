@@ -175,7 +175,7 @@ export async function requestEnableGooglePlayServices() {
 
 /**
  * Displays an in app dialog, that prompts the user to enable location services (Android only)
- * Returns true when user enables the service
+ * Returns true when user enables the service. DOES NOT WORK ON SIMULATOR
  */
 export async function requestEnableLocationServices() {
   if (Platform.OS !== 'android') {
