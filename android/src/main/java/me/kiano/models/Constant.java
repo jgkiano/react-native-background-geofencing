@@ -24,6 +24,6 @@ public class Constant {
     public static int RN_GEOFENCE_TRANSITION_JOB_ID = 456;
     public static String RN_ONE_TIME_WORK_TAG = "RNGeofenceWork";
     public static String RN_UPLOAD_WORK_GEOFENCE_TRANSITION = "RN_UPLOAD_WORK_GEOFENCE_TRANSITION";
-    public static String RN_RN_UPLOAD_WORK_WEBHOOK_CONFIG = "RN_RN_UPLOAD_WORK_WEBHOOK_CONFIG";
+    public static String RN_UPLOAD_WORK_WEBHOOK_CONFIG = "RN_RN_UPLOAD_WORK_WEBHOOK_CONFIG";
 
 }
