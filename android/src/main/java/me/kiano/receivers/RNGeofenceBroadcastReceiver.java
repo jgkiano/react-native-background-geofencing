@@ -12,7 +12,7 @@ public class RNGeofenceBroadcastReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.v(TAG, "GeofenceBroadcastReceiver received!");
+        Log.v(TAG, "Geofence transition received on broadcast receiver");
         RNGeofenceTransitionsJobIntentService.enqueueWork(context, intent);
     }
 }
