@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-community/async-storage';
-// import RNBackgroundGeofencing from 'react-native-background-geofencing';
+import RNBackgroundGeofencing from 'react-native-background-geofencing';
 
 export default class Repository {
   constructor() {
@@ -33,7 +33,7 @@ export default class Repository {
   addGeofence = async geofence => {
     try {
       geofence.configuration.createdAt = Date.now();
-      // await RNBackgroundGeofencing.add(geofence.configuration);
+      await RNBackgroundGeofencing.add(geofence.configuration);
       const geofences = (await this.getGeofences()) || [];
       geofences.unshift(geofence);
       await AsyncStorage.setItem(
