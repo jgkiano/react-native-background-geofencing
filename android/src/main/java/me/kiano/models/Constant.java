@@ -3,6 +3,7 @@ package me.kiano.models;
 import com.google.android.gms.location.Geofence;
 
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 public class Constant {
     // request codes
@@ -26,4 +27,8 @@ public class Constant {
     public static String RN_UPLOAD_WORK_GEOFENCE_TRANSITION = "RN_UPLOAD_WORK_GEOFENCE_TRANSITION";
     public static String RN_UPLOAD_WORK_WEBHOOK_CONFIG = "RN_RN_UPLOAD_WORK_WEBHOOK_CONFIG";
 
+    public static String RN_PERIODIC_WORK_NAME = "RNGeofenceRestartPeriodicWorker";
+    public static String RN_PERIODIC_WORK_TAG = "RNGeofenceRestartPeriodicWork";
+    public static TimeUnit RN_PERIODIC_WORK_TIME_UNIT = TimeUnit.MINUTES;
+    public static int RN_PERIODIC_WORK_TIME_INTERVAL = 16;
 }
