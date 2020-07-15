@@ -41,6 +41,17 @@ public class RNGeofence {
     private final String TAG = "RNGeofence";
     private final ArrayList<Object> transitionTypes;
     private final ArrayList<Object> initialTriggerTransitionTypes;
+    private boolean failing = false;
+
+    public static void setFailing (String geofenceId, boolean failing, Context context) {
+        RNGeofenceDB db = new RNGeofenceDB(context);
+        RNGeofence geofence = db.getGeofence(geofenceId);
+        if (geofence != null && geofence.failing != failing) {
+            geofence.setFailing(failing);
+            geofence.save();
+            Log.v("RNGeofence", "Updated failing property of: " + geofence.id + " to: " + failing);
+        }
+    }
 
     public static void remove(Context context,String id) {
         GeofencingClient geofencingClient = LocationServices.getGeofencingClient(context);
@@ -90,6 +101,7 @@ public class RNGeofence {
         for (int i = 0; i < initialTriggerTransitionTypesJSONArray.length(); i++) {
             initialTriggerTransitionTypes.add(initialTriggerTransitionTypesJSONArray.getString(i));
         }
+        failing = geoFence.getBoolean("failing");
         setUpRNGeofence();
     }
 
@@ -116,13 +128,16 @@ public class RNGeofence {
         geofenceList.add(geofence);
     }
 
-    private GeofencingRequest getGeofencingRequest() {
-        final int enter = initialTriggerTransitionTypes.contains("enter") ? GeofencingRequest.INITIAL_TRIGGER_ENTER : 0;
-        final int exit = initialTriggerTransitionTypes.contains("exit") ? GeofencingRequest.INITIAL_TRIGGER_EXIT : 0;
-        final int dwell = initialTriggerTransitionTypes.contains("dwell") ? GeofencingRequest.INITIAL_TRIGGER_DWELL : 0;
+    private GeofencingRequest getGeofencingRequest(boolean silently) {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        builder.setInitialTrigger(enter | exit | dwell);
         builder.addGeofences(geofenceList);
+        if (silently) {
+            return builder.build();
+        }
+        int enter = initialTriggerTransitionTypes.contains("enter") ? GeofencingRequest.INITIAL_TRIGGER_ENTER : 0;
+        int exit = initialTriggerTransitionTypes.contains("exit") ? GeofencingRequest.INITIAL_TRIGGER_EXIT : 0;
+        int dwell = initialTriggerTransitionTypes.contains("dwell") ? GeofencingRequest.INITIAL_TRIGGER_DWELL : 0;
+        builder.setInitialTrigger(enter | exit | dwell);
         return builder.build();
     }
 
@@ -140,14 +155,14 @@ public class RNGeofence {
         db.saveGeofence(this);
     }
 
-    public void start (final Boolean save, final RNGeofenceHandler handler) {
+    public void start (final Boolean silently, final RNGeofenceHandler handler) {
         try {
-            geofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent())
+            geofencingClient.addGeofences(getGeofencingRequest(silently), getGeofencePendingIntent())
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
                             Log.v(TAG, "Geofence successfully added :)");
-                            if(save) { saveToDB(); }
+                            saveToDB();
                             handler.onSuccess(id);
                         }
                     })
@@ -180,7 +195,20 @@ public class RNGeofence {
         json.put("transitionTypes", transitionTypesJSONArray);
         JSONArray initialTriggerTransitionTypesJSONArray = new JSONArray(initialTriggerTransitionTypes);
         json.put("initialTriggerTransitionTypes", initialTriggerTransitionTypesJSONArray);
+        json.put("failing", failing);
         Log.v( "RNGeofenceJSON",json.toString(2));
         return json.toString();
+    }
+
+    public boolean getFailing() {
+        return this.failing;
+    }
+
+    public void setFailing(boolean failing) {
+        this.failing = failing;
+    }
+
+    public void save() {
+        this.saveToDB();
     }
 }
