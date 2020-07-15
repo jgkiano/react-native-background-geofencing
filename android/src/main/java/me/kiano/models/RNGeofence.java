@@ -5,6 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
 import com.facebook.react.bridge.ReadableMap;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
@@ -23,6 +29,7 @@ import java.util.List;
 import me.kiano.database.RNGeofenceDB;
 import me.kiano.interfaces.RNGeofenceHandler;
 import me.kiano.receivers.RNGeofenceBroadcastReceiver;
+import me.kiano.services.RNGeofenceRestartWorker;
 
 public class RNGeofence {
     public final String id;
@@ -42,6 +49,26 @@ public class RNGeofence {
     private final ArrayList<Object> transitionTypes;
     private final ArrayList<Object> initialTriggerTransitionTypes;
     private boolean failing = false;
+
+    public static void schedulePeriodicWork(Context context) {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest periodicWorkRequest =
+                new PeriodicWorkRequest.Builder(RNGeofenceRestartWorker.class, Constant.RN_PERIODIC_WORK_TIME_INTERVAL, Constant.RN_PERIODIC_WORK_TIME_UNIT)
+                        .addTag(Constant.RN_PERIODIC_WORK_TAG)
+                        .setConstraints(constraints)
+                        .build();
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(Constant.RN_PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
+        Log.v("RNGeofence", "Periodic work scheduled");
+    }
+
+    public static void cancelPeriodicWork(Context context) {
+        WorkManager.getInstance(context).cancelUniqueWork(Constant.RN_PERIODIC_WORK_NAME);
+        Log.v("RNGeofence", "Periodic work canceled");
+    }
 
     public static void setFailing (String geofenceId, boolean failing, Context context) {
         RNGeofenceDB db = new RNGeofenceDB(context);
