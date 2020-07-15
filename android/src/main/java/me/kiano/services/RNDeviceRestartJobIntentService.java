@@ -30,20 +30,24 @@ public class RNDeviceRestartJobIntentService extends JobIntentService {
         Log.v(TAG, "RNDeviceRestartJobIntentService work started: " + storedGeofences.size());
 
         for (RNGeofence storedGeofence : storedGeofences) {
-            storedGeofence.start(true, new RNGeofenceHandler() {
-                @Override
-                public void onSuccess(final String geofenceId) {
-                    Log.v(TAG, "Geofence started successfully after restart");
-                    RNGeofence.setFailing(geofenceId, false, getApplicationContext());
-                }
+            if (storedGeofence.registerOnDeviceRestart) {
+                storedGeofence.start(true, new RNGeofenceHandler() {
+                    @Override
+                    public void onSuccess(final String geofenceId) {
+                        Log.v(TAG, "Geofence started successfully after restart");
+                        RNGeofence.setFailing(geofenceId, false, getApplicationContext());
+                    }
 
-                @Override
-                public void onError(final String geofenceId, Exception e) {
-                    // TODO: After saving failed geofence start the worker
-                    Log.v(TAG, "Geofence failed to start. We'll get em next time.");
-                    RNGeofence.setFailing(geofenceId, true, getApplicationContext());
-                }
-            });
+                    @Override
+                    public void onError(final String geofenceId, Exception e) {
+                        // TODO: After saving failed geofence start the worker
+                        Log.v(TAG, "Geofence failed to start. We'll get em next time.");
+                        RNGeofence.setFailing(geofenceId, true, getApplicationContext());
+                    }
+                });
+            } else {
+                // TODO: manually expire geofences so that periodic worker doesn't restart them
+            }
         }
     }
 }
