@@ -2,15 +2,13 @@ package me.kiano.services;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import me.kiano.database.RNGeofenceDB;
 import me.kiano.interfaces.RNGeofenceHandler;
@@ -32,16 +30,18 @@ public class RNDeviceRestartJobIntentService extends JobIntentService {
         Log.v(TAG, "RNDeviceRestartJobIntentService work started: " + storedGeofences.size());
 
         for (RNGeofence storedGeofence : storedGeofences) {
-            storedGeofence.start(false, new RNGeofenceHandler() {
+            storedGeofence.start(true, new RNGeofenceHandler() {
                 @Override
                 public void onSuccess(final String geofenceId) {
-                    Log.v(TAG, "Geofence successfully reinitialised: " + geofenceId);
+                    Log.v(TAG, "Geofence started successfully after restart");
+                    RNGeofence.setFailing(geofenceId, false, getApplicationContext());
                 }
 
                 @Override
                 public void onError(final String geofenceId, Exception e) {
-                    Log.v(TAG, "Geofence FAILED reinitialisation: " + geofenceId);
-                    Log.e(TAG, e.getMessage());
+                    // TODO: After saving failed geofence start the worker
+                    Log.v(TAG, "Geofence failed to start. We'll get em next time.");
+                    RNGeofence.setFailing(geofenceId, true, getApplicationContext());
                 }
             });
         }
