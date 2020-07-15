@@ -41,11 +41,15 @@ public class RNGeofenceWebhookWorker extends Worker {
 
     @Override
     public Result doWork() {
-
         // check if we have a http client and webhook instance
         if (httpClient == null || rnGeofenceWebhook == null) {
             Log.v(TAG, "Unable to call webhook. Missing configuration");
-            return Result.success();
+            return Result.failure();
+        }
+
+        if (getRunAttemptCount() > Constant.RN_UPLOAD_WORK_MAX_ATTEMPTS) {
+            return Result.failure();
+            // TODO: store these requests and retry them later
         }
 
         try {
@@ -74,20 +78,22 @@ public class RNGeofenceWebhookWorker extends Worker {
             // execute the http request
             Response response = httpClient.newCall(request).execute();
 
-            if (response.isSuccessful()) {
-                Log.v(TAG, "Request successfully sent status code: " + response.code());
-            } else {
-                Log.e(TAG, "Request failed with status code: " + response.code());
-            }
-
             Log.v(TAG, "Transmitted payload: ");
             Log.v(TAG, payload.toString());
             Log.v(TAG, "Webhook configuration: ");
             Log.v(TAG, rnGeofenceWebhook.toJSON());
+            
+            if (response.isSuccessful()) {
+                Log.v(TAG, "Request successfully sent status code: " + response.code());
+                return Result.success();
+            } else {
+                Log.e(TAG, "Request failed with status code: " + response.code());
+                return Result.retry();
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            return Result.success();
+            return Result.retry();
         }
     }
 }
