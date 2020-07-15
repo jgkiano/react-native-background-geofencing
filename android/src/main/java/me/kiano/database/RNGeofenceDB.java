@@ -29,6 +29,7 @@ public class RNGeofenceDB {
             DB db = DBFactory.open(context, Constant.RN_DB_NAME);
             db.put(Constant.RN_GEOFENCE_KEY_PREFIX + rnGeofence.id, rnGeofence.toJSON());
             Log.v(TAG, "Geofence successfully saved to DB: " + rnGeofence.id);
+            db.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -53,6 +54,22 @@ public class RNGeofenceDB {
         } catch (Exception e) {
             e.printStackTrace();
             return savedGeofences;
+        }
+    }
+
+    public RNGeofence getGeofence(String geofenceId) {
+        try {
+            RNGeofence geofence = null;
+            DB db = DBFactory.open(context, Constant.RN_DB_NAME);
+            String geofenceJSON = db.get(Constant.RN_GEOFENCE_KEY_PREFIX + geofenceId);
+            if (geofenceJSON != null) {
+                geofence = new RNGeofence(context, new JSONObject(geofenceJSON));
+            }
+            db.close();
+            return geofence;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 
@@ -89,18 +106,6 @@ public class RNGeofenceDB {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        }
-    }
-
-    public boolean hasWebhookConfiguration() {
-        try {
-            DB db = DBFactory.open(context, Constant.RN_DB_NAME);
-            boolean exists = db.exists(Constant.RN_WEBHOOK_CONFIG_KEY);
-            db.close();
-            return exists;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         }
     }
 
