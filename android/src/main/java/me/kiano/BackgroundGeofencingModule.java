@@ -34,7 +34,7 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
 
     private void addGeofence(ReadableMap geoFence, final Promise promise) {
         final RNGeofence rnGeofence = new RNGeofence(getReactApplicationContext(), geoFence);
-        rnGeofence.start(true, new RNGeofenceHandler() {
+        rnGeofence.start(false, new RNGeofenceHandler() {
             @Override
             public void onSuccess(String geofenceId) {
                 Log.v("RNBGeofencing", "Geofence successfully added");
