@@ -26,6 +26,9 @@ public class Constant {
     public static String RN_ONE_TIME_WORK_TAG = "RNGeofenceWork";
     public static String RN_UPLOAD_WORK_GEOFENCE_TRANSITION = "RN_UPLOAD_WORK_GEOFENCE_TRANSITION";
     public static String RN_UPLOAD_WORK_WEBHOOK_CONFIG = "RN_RN_UPLOAD_WORK_WEBHOOK_CONFIG";
+    public static int RN_UPLOAD_WORK_BACK_OFF_DELAY = 15;
+    public static TimeUnit  RN_UPLOAD_WORK_BACK_OFF_DELAY_TIME_UNIT = TimeUnit.MINUTES;
+    public static int RN_UPLOAD_WORK_MAX_ATTEMPTS = 10;
 
     public static String RN_PERIODIC_WORK_NAME = "RNGeofenceRestartPeriodicWorker";
     public static String RN_PERIODIC_WORK_TAG = "RNGeofenceRestartPeriodicWork";
