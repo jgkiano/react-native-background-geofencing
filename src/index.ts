@@ -14,7 +14,7 @@ import {
   RNBackgroundGeofencingConfiguration,
   RNBackgroundGeofencingJSTask,
   RNBackgroundGeofencingNotification,
-  RNGeofenceTransitionType,
+  RNTransitionEvent,
   RNBackgroundGeofence,
 } from './types';
 
@@ -37,12 +37,10 @@ const DEFAULT_WEBHOOK_CONFIGURATION = {
 const DEFAULT_NOTIFICATION_CONFIGURATION: RNBackgroundGeofencingNotification = {
   text: '',
   title: '',
-  android: {
-    importance: 3,
-    channelDescription: '',
-    channelName: '',
-    channelId: '',
-  },
+  importance: 3,
+  channelDescription: 'RNBackgroundGeofencing',
+  channelName: 'RNBackgroundGeofencing',
+  channelId: 'RNBackgroundGeofencing',
 };
 
 const DEFAULT_GEOFENCE_CONFIGURATION = {
@@ -87,13 +85,9 @@ const configureJSTask = async (jsTask: RNBackgroundGeofencingJSTask) => {
       });
     }
     AppRegistry.registerHeadlessTask('OnGeofenceTransitionEvent', () => {
-      const headlessTask = async (nativeTransitionEvent: {
-        transition: RNGeofenceTransitionType;
-        data: string;
-      }) => {
+      const headlessTask = async (transitionEvent: RNTransitionEvent) => {
         try {
-          const { transition, data } = nativeTransitionEvent;
-          await task({ transition, data: JSON.parse(data) });
+          await task(JSON.parse(transitionEvent.RN_GEOFENCE_TRANSITION_DATA));
         } catch (error) {
           console.error(`[RNBackgroundGeofencing]`, error);
         }
