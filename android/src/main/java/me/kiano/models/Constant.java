@@ -27,8 +27,15 @@ public class Constant {
     public static TimeUnit  RN_UPLOAD_WORK_BACK_OFF_DELAY_TIME_UNIT = TimeUnit.MINUTES;
     public static int RN_UPLOAD_WORK_MAX_ATTEMPTS = 10;
 
+    // periodic work
     public static String RN_PERIODIC_WORK_NAME = "RNGeofenceRestartPeriodicWorker";
     public static String RN_PERIODIC_WORK_TAG = "RNGeofenceRestartPeriodicWork";
     public static TimeUnit RN_PERIODIC_WORK_TIME_UNIT = TimeUnit.MINUTES;
     public static int RN_PERIODIC_WORK_TIME_INTERVAL = 16;
+
+    // js service
+    public static String RN_HEADLESS_JS_TRANSITION_EVENT = "RN_GEOFENCE_TRANSITION_DATA";
+    public static int RN_JS_FOREGROUND_SERVICE_ID = 1;
+    public static String RN_JS_FOREGROUND_SERVICE_TASK_KEY = "OnGeofenceTransitionEvent";
+    public static int RN_JS_FOREGROUND_SERVICE_TIMEOUT = 30000;
 }
