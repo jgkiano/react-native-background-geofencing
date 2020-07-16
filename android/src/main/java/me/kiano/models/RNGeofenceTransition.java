@@ -1,5 +1,6 @@
 package me.kiano.models;
 
+import android.content.Context;
 import android.location.Location;
 import android.os.Build;
 
@@ -12,6 +13,9 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import me.kiano.database.RNGeofenceDB;
 
 public class RNGeofenceTransition {
     private final String TAG = "RNGeofenceData";
@@ -92,5 +96,17 @@ public class RNGeofenceTransition {
         payload.put("transits", transits);
 
         return payload.toString();
+    }
+
+    public String getTriggeringGeofenceOrigin(Context context) {
+        Geofence geofence = geofenceTransitionEvent.getTriggeringGeofences().get(0);
+        if (geofence != null) {
+            RNGeofenceDB db = new RNGeofenceDB(context);
+            RNGeofence rnGeofence = db.getGeofence(geofence.getRequestId());
+            if (rnGeofence != null) {
+                return  rnGeofence.getOrigin();
+            }
+        }
+        return null;
     }
 }
