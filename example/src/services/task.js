@@ -1,7 +1,11 @@
-import Repository from './Repository';
+// import Repository from './Repository';
 // import {RNGeofenceEvent} from 'react-native-background-geofencing';
 
-export default async function({event, data}) {
+export default async function(data) {
+  console.log('-------');
+  console.log(data);
+  console.log(data.transits);
+  console.log('-------');
   // console.log('--client--');
   // console.log(event);
   // console.log(data);
