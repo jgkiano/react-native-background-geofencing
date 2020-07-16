@@ -40,6 +40,27 @@ export class RNBackgroundGeofencingException extends Error {
   }
 }
 
+export interface RNTransitionEvent {
+  RN_GEOFENCE_TRANSITION_DATA: string;
+}
+
+export interface RNTransitionEventData {
+  ids: Array<string>;
+  transition_date: number;
+  geopoint_provider: string;
+  geo_point: {
+    lat: number;
+    lon: number;
+  };
+  gps_accuracy: number;
+  transition_event: RNGeofenceTransitionType;
+  geo_point_source: 'geofence';
+  device_os_name: 'android' | 'ios';
+  device_os_version: string;
+  device_manufacturer: string;
+  device_model: string;
+}
+
 export interface RNBackgroundGeofencingAndroidNotification {
   importance: number;
   channelId: string;
@@ -61,7 +82,10 @@ export interface RNGeofenceTransitionData {
 export interface RNBackgroundGeofencingNotification {
   title: string;
   text: string;
-  android: RNBackgroundGeofencingAndroidNotification;
+  importance?: number;
+  channelId?: string;
+  channelName?: string;
+  channelDescription?: string;
 }
 
 export interface RNBackgroundGeofencingTransitionEvent {
@@ -70,7 +94,7 @@ export interface RNBackgroundGeofencingTransitionEvent {
 }
 
 export interface RNBackgroundGeofencingJSTask {
-  task: (transition: RNBackgroundGeofencingTransitionEvent) => Promise<any>;
+  task: (transition: RNTransitionEventData) => any;
   notification: RNBackgroundGeofencingNotification;
 }
 
