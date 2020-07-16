@@ -27,36 +27,64 @@ public class RNGeofenceRestartWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        if (RNLocationService.isLocationPermissionGranted(getApplicationContext()) && RNLocationService.isLocationServicesEnabled(getApplicationContext()) && RNGooglePlayService.isGooglePlayServicesAvailable(getApplicationContext())) {
-            Log.v(TAG, "All conditions met for restart attempt");
-            RNGeofenceDB db = new RNGeofenceDB(getApplicationContext());
-            final ArrayList<String> ids = new ArrayList<>();
-            ArrayList<RNGeofence> geofences = db.getAllGeofences();
-            for (final RNGeofence geofence: geofences) {
-                if (geofence.getFailing()) {
-                    geofence.start(true, true, new RNGeofenceHandler() {
-                        @Override
-                        public void onSuccess(String geofenceId) {
-                            RNGeofence.setFailing(geofenceId, false, getApplicationContext());
-                            Log.v(TAG, "Successfully restarted geofence: " + geofenceId);
-                        }
 
-                        @Override
-                        public void onError(String geofenceId, Exception e) {
-                            RNGeofence.setFailing(geofenceId, true, getApplicationContext());
-                            ids.add(geofenceId);
-                            Log.v(TAG, "Failed restart geofence: " + geofenceId);
-                        }
-                    });
-                }
-            }
-            if (ids.isEmpty()) {
-                RNGeofence.cancelPeriodicWork(getApplicationContext());
-                Log.v(TAG, "Successfully restarted all failed geofences");
-            }
-        } else {
-            Log.v(TAG, "Conditions not met for restart attempt");
+        boolean isRestartSuccessful = restartFailedGeofences();
+
+        if (isRestartSuccessful) {
+            RNGeofence.cancelPeriodicWork(getApplicationContext());
         }
+
         return Result.success();
+    }
+
+    private boolean restartFailedGeofences() {
+        boolean isLocationPermissionGranted = RNLocationService.isLocationPermissionGranted(getApplicationContext());
+        boolean isLocationServicesEnabled = RNLocationService.isLocationServicesEnabled(getApplicationContext());
+        boolean isGooglePlayServicesAvailable = RNGooglePlayService.isGooglePlayServicesAvailable(getApplicationContext());
+        RNGeofenceDB db = new RNGeofenceDB(getApplicationContext());
+        final ArrayList<RNGeofence> failingGeofences = new ArrayList<>();
+        ArrayList<RNGeofence> geofences = db.getAllGeofences();
+
+        // get all failing geofences
+        for (RNGeofence geofence: geofences) {
+            if (geofence.getFailing()) {
+                failingGeofences.add(geofence);
+            }
+        }
+
+        // return true if empty
+        if (failingGeofences.isEmpty()) {
+            return true;
+        }
+
+        // check conditions for restart
+        if (isLocationPermissionGranted && isLocationServicesEnabled && isGooglePlayServicesAvailable) {
+            Log.v(TAG, "All conditions met for restart attempt");
+            final ArrayList<String> failedRestartIds = new ArrayList<>();
+
+            // attempt to restart geofences silently, keep track of failed ones
+            for(RNGeofence failedGeofence: failingGeofences) {
+                failedGeofence.start(true, true, new RNGeofenceHandler() {
+                    @Override
+                    public void onSuccess(String geofenceId) {
+                        RNGeofence.setFailing(geofenceId, false, getApplicationContext());
+                        Log.v(TAG, "Successfully restarted geofence: " + geofenceId);
+                    }
+
+                    @Override
+                    public void onError(String geofenceId, Exception e) {
+                        failedRestartIds.add(geofenceId);
+                        RNGeofence.setFailing(geofenceId, true, getApplicationContext());
+                        Log.v(TAG, "Failed restart geofence: " + geofenceId);
+                    }
+                });
+            }
+
+            // eval if we have failed ones
+            return failedRestartIds.isEmpty();
+        }
+
+        // conditions not met try again later
+        return false;
     }
 }
