@@ -49,6 +49,7 @@ public class RNGeofence {
     private final ArrayList<Object> transitionTypes;
     private final ArrayList<Object> initialTriggerTransitionTypes;
     private boolean failing = false;
+    private String origin;
 
     public static void schedulePeriodicWork(Context context) {
         Constraints constraints = new Constraints.Builder()
@@ -103,6 +104,7 @@ public class RNGeofence {
         registerOnDeviceRestart = geoFence.getBoolean("registerOnDeviceRestart");
         transitionTypes = geoFence.getArray("transitionTypes").toArrayList();
         initialTriggerTransitionTypes = geoFence.getArray("initialTriggerTransitionTypes").toArrayList();
+        origin = RNGeofenceOrigin.RN;
         setUpRNGeofence();
     }
 
@@ -129,6 +131,7 @@ public class RNGeofence {
             initialTriggerTransitionTypes.add(initialTriggerTransitionTypesJSONArray.getString(i));
         }
         failing = geoFence.getBoolean("failing");
+        origin = geoFence.getString("origin");
         setUpRNGeofence();
     }
 
@@ -225,6 +228,7 @@ public class RNGeofence {
         JSONArray initialTriggerTransitionTypesJSONArray = new JSONArray(initialTriggerTransitionTypes);
         json.put("initialTriggerTransitionTypes", initialTriggerTransitionTypesJSONArray);
         json.put("failing", failing);
+        json.put("origin", origin);
         Log.v( "RNGeofenceJSON",json.toString(2));
         return json.toString();
     }
@@ -239,5 +243,9 @@ public class RNGeofence {
 
     public void save() {
         this.saveToDB();
+    }
+
+    public String getOrigin() {
+        return this.origin;
     }
 }
