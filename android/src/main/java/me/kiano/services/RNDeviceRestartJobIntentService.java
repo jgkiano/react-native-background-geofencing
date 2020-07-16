@@ -31,7 +31,7 @@ public class RNDeviceRestartJobIntentService extends JobIntentService {
 
         for (RNGeofence storedGeofence : storedGeofences) {
             if (storedGeofence.registerOnDeviceRestart) {
-                storedGeofence.start(true, new RNGeofenceHandler() {
+                storedGeofence.start(true, true, new RNGeofenceHandler() {
                     @Override
                     public void onSuccess(final String geofenceId) {
                         Log.v(TAG, "Geofence started successfully after restart");
