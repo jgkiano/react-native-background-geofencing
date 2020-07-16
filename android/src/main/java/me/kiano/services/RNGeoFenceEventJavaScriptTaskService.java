@@ -14,9 +14,6 @@ import androidx.core.app.NotificationCompat;
 import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.jstasks.HeadlessJsTaskConfig;
-import com.snappydb.SnappydbException;
-
-import org.json.JSONException;
 
 import java.util.List;
 

@@ -8,7 +8,6 @@ import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 import me.kiano.database.RNGeofenceDB;
 import me.kiano.interfaces.RNGeofenceHandler;
