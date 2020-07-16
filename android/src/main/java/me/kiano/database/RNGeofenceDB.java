@@ -59,14 +59,15 @@ public class RNGeofenceDB {
 
     public RNGeofence getGeofence(String geofenceId) {
         try {
-            RNGeofence geofence = null;
+            String key = Constant.RN_GEOFENCE_KEY_PREFIX + geofenceId;
             DB db = DBFactory.open(context, Constant.RN_DB_NAME);
-            String geofenceJSON = db.get(Constant.RN_GEOFENCE_KEY_PREFIX + geofenceId);
-            if (geofenceJSON != null) {
-                geofence = new RNGeofence(context, new JSONObject(geofenceJSON));
+            if (db.exists(key)) {
+                String geofenceJSON = db.get(key);
+                RNGeofence geofence = new RNGeofence(context, new JSONObject(geofenceJSON));
+                return geofence;
             }
             db.close();
-            return geofence;
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -99,10 +100,13 @@ public class RNGeofenceDB {
 
     public RNGeofenceWebhook getWebhookConfiguration() {
         try {
+            String key = Constant.RN_WEBHOOK_CONFIG_KEY;
             DB db = DBFactory.open(context, Constant.RN_DB_NAME);
-            RNGeofenceWebhook rnGeofenceWebhook = new RNGeofenceWebhook(new JSONObject(db.get(Constant.RN_WEBHOOK_CONFIG_KEY)));
+            if (db.exists(key)) {
+                return new RNGeofenceWebhook(new JSONObject(db.get(key)));
+            }
             db.close();
-            return rnGeofenceWebhook;
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -120,24 +124,15 @@ public class RNGeofenceDB {
         }
     }
 
-    public boolean hasNotificationConfiguration() {
-        try {
-            DB db = DBFactory.open(context, Constant.RN_DB_NAME);
-            boolean exists = db.exists(Constant.RN_NOTIFICATION_CONFIG_KEY);
-            db.close();
-            return exists;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public RNNotification getNotification() {
         try {
+            String key = Constant.RN_NOTIFICATION_CONFIG_KEY;
             DB db = DBFactory.open(context, Constant.RN_DB_NAME);
-            RNNotification notification = new RNNotification(new JSONObject(db.get(Constant.RN_NOTIFICATION_CONFIG_KEY)));
+            if (db.exists(key)) {
+                return new RNNotification(new JSONObject(db.get(key)));
+            }
             db.close();
-            return notification;
+            return null;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
