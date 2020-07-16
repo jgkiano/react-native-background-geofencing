@@ -182,14 +182,16 @@ public class RNGeofence {
         db.saveGeofence(this);
     }
 
-    public void start (final Boolean silently, final RNGeofenceHandler handler) {
+    public void start (final Boolean silently, final Boolean skipSave, final RNGeofenceHandler handler) {
         try {
             geofencingClient.addGeofences(getGeofencingRequest(silently), getGeofencePendingIntent())
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
                             Log.v(TAG, "Geofence successfully added :)");
-                            saveToDB();
+                            if (!skipSave) {
+                                saveToDB();
+                            }
                             handler.onSuccess(id);
                         }
                     })
