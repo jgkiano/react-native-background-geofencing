@@ -34,7 +34,7 @@ public class RNGeofenceRestartWorker extends Worker {
             ArrayList<RNGeofence> geofences = db.getAllGeofences();
             for (final RNGeofence geofence: geofences) {
                 if (geofence.getFailing()) {
-                    geofence.start(true, new RNGeofenceHandler() {
+                    geofence.start(true, true, new RNGeofenceHandler() {
                         @Override
                         public void onSuccess(String geofenceId) {
                             RNGeofence.setFailing(geofenceId, false, getApplicationContext());
