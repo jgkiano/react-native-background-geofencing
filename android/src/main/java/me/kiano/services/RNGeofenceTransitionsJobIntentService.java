@@ -57,7 +57,6 @@ public class RNGeofenceTransitionsJobIntentService extends JobIntentService {
             for (Geofence failedGeofence: failedGeofences) {
                 RNGeofence.setFailing(failedGeofence.getRequestId(), true, getApplicationContext());
             }
-            RNGeofence.schedulePeriodicWork(getApplicationContext());
             return;
         }
 
