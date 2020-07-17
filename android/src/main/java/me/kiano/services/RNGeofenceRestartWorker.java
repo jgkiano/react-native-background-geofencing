@@ -61,7 +61,7 @@ public class RNGeofenceRestartWorker extends Worker {
         if (isLocationPermissionGranted && isLocationServicesEnabled && isGooglePlayServicesAvailable) {
             Log.v(TAG, "All conditions met for restart attempt");
 
-            // attempt to restart geofences silently, keep track of failed ones
+            // attempt to restart geofences silently
             for(RNGeofence failedGeofence: failingGeofences) {
                 failedGeofence.start(true, true, new RNGeofenceHandler() {
                     @Override
