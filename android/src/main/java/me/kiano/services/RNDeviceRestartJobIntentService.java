@@ -28,9 +28,6 @@ public class RNDeviceRestartJobIntentService extends JobIntentService {
         ArrayList<RNGeofence> storedGeofences = db.getAllGeofences();
         Log.v(TAG, "RNDeviceRestartJobIntentService work started: " + storedGeofences.size());
 
-        // start worker to perform any clean up
-        RNGeofence.schedulePeriodicWork(getApplicationContext());
-
         for (RNGeofence storedGeofence : storedGeofences) {
             if (storedGeofence.registerOnDeviceRestart) {
                 storedGeofence.start(true, true, new RNGeofenceHandler() {
