@@ -60,7 +60,6 @@ public class RNGeofenceRestartWorker extends Worker {
         // check conditions for restart
         if (isLocationPermissionGranted && isLocationServicesEnabled && isGooglePlayServicesAvailable) {
             Log.v(TAG, "All conditions met for restart attempt");
-            final ArrayList<String> failedRestartIds = new ArrayList<>();
 
             // attempt to restart geofences silently, keep track of failed ones
             for(RNGeofence failedGeofence: failingGeofences) {
@@ -73,18 +72,14 @@ public class RNGeofenceRestartWorker extends Worker {
 
                     @Override
                     public void onError(String geofenceId, Exception e) {
-                        failedRestartIds.add(geofenceId);
                         RNGeofence.setFailing(geofenceId, true, getApplicationContext());
                         Log.v(TAG, "Failed restart geofence: " + geofenceId);
                     }
                 });
             }
-
-            // eval if we have failed ones
-            return failedRestartIds.isEmpty();
         }
 
-        // conditions not met try again later
+        // check later if geofence were restarted successfully
         return false;
     }
 }
