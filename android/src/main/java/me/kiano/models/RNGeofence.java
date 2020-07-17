@@ -165,6 +165,7 @@ public class RNGeofence {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
         builder.addGeofences(geofenceList);
         if (silently) {
+            builder.setInitialTrigger(0);
             return builder.build();
         }
         int enter = initialTriggerTransitionTypes.contains("enter") ? GeofencingRequest.INITIAL_TRIGGER_ENTER : 0;
