@@ -77,6 +77,10 @@ public class RNGeofence {
         if (geofence != null && geofence.failing != failing) {
             geofence.setFailing(failing);
             geofence.save();
+            // if its failing start worker
+            if (failing) {
+                RNGeofence.schedulePeriodicWork(context);
+            }
             Log.v("RNGeofence", "Updated failing property of: " + geofence.id + " to: " + failing);
         }
     }
@@ -110,7 +114,6 @@ public class RNGeofence {
 
     public RNGeofence (Context context, JSONObject geoFence) throws JSONException {
         this.context = context;
-        Log.v(TAG, geoFence.toString(2));
         id = geoFence.getString("id");
         lat = geoFence.getDouble("lat");
         lng = geoFence.getDouble("lng");
@@ -191,7 +194,6 @@ public class RNGeofence {
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            Log.v(TAG, "Geofence successfully added :)");
                             if (!skipSave) {
                                 saveToDB();
                             }
@@ -203,7 +205,6 @@ public class RNGeofence {
                         public void onFailure(Exception e) {
                             Log.v(TAG, e.getMessage());
                             e.printStackTrace();
-                            Log.v(TAG, "Geofence add failed :(");
                             handler.onError(id, e);
                         }
                     });
@@ -229,7 +230,6 @@ public class RNGeofence {
         json.put("initialTriggerTransitionTypes", initialTriggerTransitionTypesJSONArray);
         json.put("failing", failing);
         json.put("origin", origin);
-        Log.v( "RNGeofenceJSON",json.toString(2));
         return json.toString();
     }
 
