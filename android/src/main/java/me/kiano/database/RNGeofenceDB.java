@@ -5,15 +5,14 @@ import android.util.Log;
 
 import com.snappydb.DB;
 import com.snappydb.DBFactory;
-import com.snappydb.SnappydbException;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import me.kiano.models.Constant;
 import me.kiano.models.RNGeofence;
-import me.kiano.models.RNGeofenceWebhookConfiguration;
+import me.kiano.models.RNGeofenceWebhook;
 import me.kiano.models.RNNotification;
 
 public class RNGeofenceDB {
@@ -23,36 +22,27 @@ public class RNGeofenceDB {
         this.context = context;
     }
 
-    private String DB_NAME = "RNBackgroundGeofencingDB";
-
     private String TAG = "RNGeofenceDB";
-
-    private String GEOFENCE_KEY_PREFIX = "RNGeofenceDB:v1:";
-
-    private String WEBHOOK_CONFIG_KEY = "RNWebhookDB:v1:configuration";
-
-    private String NOTIFICATION_CONFIG_KEY = "RNNotificationDB:v1:configuration";
 
     public void saveGeofence(RNGeofence rnGeofence) {
         try {
-            DB db = DBFactory.open(context, DB_NAME);
-            db.put(GEOFENCE_KEY_PREFIX + rnGeofence.id, rnGeofence.toJSON());
+            DB db = DBFactory.open(context, Constant.RN_DB_NAME);
+            db.put(Constant.RN_GEOFENCE_KEY_PREFIX + rnGeofence.id, rnGeofence.toJSON());
             Log.v(TAG, "Geofence successfully saved to DB: " + rnGeofence.id);
+            db.close();
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        } finally {
-
+            e.printStackTrace();
         }
     }
 
     public ArrayList<RNGeofence> getAllGeofences() {
         ArrayList<RNGeofence> savedGeofences = new ArrayList<>();
         try {
-            final  DB db = DBFactory.open(context, DB_NAME);
-            final String[] geofences = db.findKeys(GEOFENCE_KEY_PREFIX);
+            DB db = DBFactory.open(context, Constant.RN_DB_NAME);
+            String[] geofences = db.findKeys(Constant.RN_GEOFENCE_KEY_PREFIX);
             for (String key : geofences) {
-                final String savedGeofenceJSON = db.get(key);
-                final RNGeofence rnGeofence = new RNGeofence(context, new JSONObject(savedGeofenceJSON));
+                String savedGeofenceJSON = db.get(key);
+                RNGeofence rnGeofence = new RNGeofence(context, new JSONObject(savedGeofenceJSON));
                 if (rnGeofence.isExpired()) {
                     removeGeofence(rnGeofence.id);
                 } else {
@@ -62,91 +52,90 @@ public class RNGeofenceDB {
             db.close();
             return savedGeofences;
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
             e.printStackTrace();
             return savedGeofences;
         }
     }
 
+    public RNGeofence getGeofence(String geofenceId) {
+        try {
+            String key = Constant.RN_GEOFENCE_KEY_PREFIX + geofenceId;
+            DB db = DBFactory.open(context, Constant.RN_DB_NAME);
+            if (db.exists(key)) {
+                String geofenceJSON = db.get(key);
+                RNGeofence geofence = new RNGeofence(context, new JSONObject(geofenceJSON));
+                return geofence;
+            }
+            db.close();
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public String removeGeofence(String geofenceId) {
         try {
-            final DB db = DBFactory.open(context, DB_NAME);
-            db.del(GEOFENCE_KEY_PREFIX + geofenceId);
-            Log.v(TAG, "Geofence removed from DB: " + geofenceId);
+            DB db = DBFactory.open(context, Constant.RN_DB_NAME);
+            db.del(Constant.RN_GEOFENCE_KEY_PREFIX + geofenceId);
+            Log.v(TAG, "Geofence successfully removed from DB: " + geofenceId);
             db.close();
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            e.printStackTrace();
         } finally {
             return geofenceId;
         }
     }
 
-    public void saveWebhookConfiguration(RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration) {
+    public void saveWebhookConfiguration(RNGeofenceWebhook rnGeofenceWebhook) {
         try {
-            final DB db = DBFactory.open(context, DB_NAME);
-            db.put(WEBHOOK_CONFIG_KEY, rnGeofenceWebhookConfiguration.toJSON());
+            DB db = DBFactory.open(context, Constant.RN_DB_NAME);
+            db.put(Constant.RN_WEBHOOK_CONFIG_KEY, rnGeofenceWebhook.toJSON());
             db.close();
-            Log.v(TAG, "Geofence Webhook successfully saved to DB: " + rnGeofenceWebhookConfiguration.toJSON()
-                    + " stored: " + rnGeofenceWebhookConfiguration.getUrl());
+            Log.v(TAG, "Geofence webhook configuration saved: " + rnGeofenceWebhook.getUrl());
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    public RNGeofenceWebhookConfiguration getWebhookConfiguration() throws JSONException, SnappydbException {
+    public RNGeofenceWebhook getWebhookConfiguration() {
         try {
-            final DB db = DBFactory.open(context, DB_NAME);
-            final RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration = new RNGeofenceWebhookConfiguration(
-                    new JSONObject(db.get(WEBHOOK_CONFIG_KEY)));
+            String key = Constant.RN_WEBHOOK_CONFIG_KEY;
+            DB db = DBFactory.open(context, Constant.RN_DB_NAME);
+            if (db.exists(key)) {
+                return new RNGeofenceWebhook(new JSONObject(db.get(key)));
+            }
             db.close();
-            return rnGeofenceWebhookConfiguration;
+            return null;
         } catch (Exception e) {
-            throw e;
-        }
-    }
-
-    public boolean hasWebhookConfiguration() {
-        try {
-            final DB db = DBFactory.open(context, DB_NAME);
-            final boolean exists = db.exists(WEBHOOK_CONFIG_KEY);
-            db.close();
-            return exists;
-        } catch (Exception e) {
-            return false;
+            e.printStackTrace();
+            return null;
         }
     }
 
     public void saveNotification(RNNotification notification) {
         try {
-            final DB db = DBFactory.open(context, DB_NAME);
-            db.put(NOTIFICATION_CONFIG_KEY, notification.toJSON());
+            DB db = DBFactory.open(context, Constant.RN_DB_NAME);
+            db.put(Constant.RN_NOTIFICATION_CONFIG_KEY, notification.toJSON());
             db.close();
-            Log.v(TAG, "Geofence notification successfully saved to DB: " + notification.toJSON() + " stored: "
-                    + notification.getText());
+            Log.v(TAG, "Geofence notification successfully saved to DB: " + notification.getTitle());
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    public boolean hasNotificationConfiguration() {
+    public RNNotification getNotification() {
         try {
-            final DB db = DBFactory.open(context, DB_NAME);
-            final boolean exists = db.exists(NOTIFICATION_CONFIG_KEY);
+            String key = Constant.RN_NOTIFICATION_CONFIG_KEY;
+            DB db = DBFactory.open(context, Constant.RN_DB_NAME);
+            if (db.exists(key)) {
+                return new RNNotification(new JSONObject(db.get(key)));
+            }
             db.close();
-            return exists;
+            return null;
         } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public RNNotification getNotification() throws JSONException, SnappydbException {
-        try {
-            final DB db = DBFactory.open(context, DB_NAME);
-            final RNNotification notification = new RNNotification(new JSONObject(db.get(NOTIFICATION_CONFIG_KEY)));
-            db.close();
-            return notification;
-        } catch (Exception e) {
-            throw e;
+            e.printStackTrace();
+            return null;
         }
     }
 }

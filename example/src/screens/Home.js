@@ -1,73 +1,90 @@
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import {View, Modal} from 'react-native';
-import Repository from '../services/Repository';
-import FullScreenLoader from '../components/FullScreenLoader';
+import {Alert, Vibration} from 'react-native';
+import styled from 'styled-components';
 import FullButton from '../components/FullButton';
-import HomeGeofences from '../components/HomeGeofences';
 import HomeEmptyState from '../components/HomeEmptyState';
-import ModalBody from '../components/ModalBody';
+import HomeGeofenceList from '../components/HomeGeofenceList';
 
-export default class Home extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      loading: true,
-      geofences: [],
-      modalVisible: false,
-    };
-    this.repo = new Repository();
-    this.timer = setTimeout(async () => {
-      const geofences = await this.repo.getGeofences();
-      this.setState({geofences, loading: false});
-      clearTimeout(this.timer);
-    }, 1500);
-  }
+import {withContext} from '../context';
 
-  handleFormSubmit = geofence => {
-    this.setState({modalVisible: false, loading: true}, async () => {
-      const geofences = await this.repo.addGeofence(geofence);
-      this.setState({geofences, loading: false});
+class HomeScreen extends React.Component {
+  state = {
+    refreshing: false,
+  };
+
+  handleOnPress = () => {
+    const {navigation} = this.props;
+    navigation.navigate('AddGeofence');
+  };
+
+  handleOnGeofenceSelect = geofence => {
+    const {navigation} = this.props;
+    navigation.navigate('GeofenceHistory', {geofence});
+  };
+
+  handleOnRefresh = () => {
+    const {context} = this.props;
+    this.setState({refreshing: true}, async () => {
+      await context.hydrate();
+      this.setState({refreshing: false});
     });
   };
 
-  handleItemTap = geofenceId => {
-    this.props.navigation.push('History', {geofenceId});
+  handleRemoveGeofence = async geofence => {
+    this.setState({refreshing: true});
+    const {context} = this.props;
+    const {removeGeofence} = context;
+    await removeGeofence(geofence);
+    this.setState({refreshing: false});
+  };
+
+  handleOnLongPress = geofence => {
+    Vibration.vibrate(70);
+    Alert.alert(
+      'Remove Geofence',
+      'Are you sure you want to remove this Geofence and all of its events?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => this.handleRemoveGeofence(geofence)},
+      ],
+      {cancelable: false},
+    );
   };
 
   renderPage = () => {
-    const {loading, geofences} = this.state;
-    if (loading) {
-      return <FullScreenLoader />;
+    const {context} = this.props;
+    const {geofences, events} = context;
+    if (!geofences.length) {
+      return <HomeEmptyState />;
     }
-    if (geofences && geofences.length) {
-      return (
-        <HomeGeofences geofences={geofences} onItemTap={this.handleItemTap} />
-      );
-    }
-    return <HomeEmptyState />;
+    return (
+      <HomeGeofenceList
+        geofences={geofences}
+        onGeofenceSelect={this.handleOnGeofenceSelect}
+        events={events}
+        refreshing={this.state.refreshing}
+        onRefresh={this.handleOnRefresh}
+        onLongPress={this.handleOnLongPress}
+      />
+    );
   };
 
   render() {
-    const {loading, modalVisible} = this.state;
     return (
-      <View style={{flex: 1, flexDirection: 'column'}}>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={modalVisible}
-          onRequestClose={() => {
-            this.setState({modalVisible: false});
-          }}>
-          <ModalBody onSubmit={this.handleFormSubmit} />
-        </Modal>
+      <Container>
         {this.renderPage()}
-        <FullButton
-          label="ADD A GEOFENCE"
-          disabled={loading}
-          onPress={() => this.setState({modalVisible: true})}
-        />
-      </View>
+        <FullButton label="ADD A GEOFENCE" onPress={this.handleOnPress} />
+      </Container>
     );
   }
 }
+
+const Container = styled.View`
+  flex: 1;
+  flex-direction: column;
+`;
+
+export default withContext(HomeScreen);

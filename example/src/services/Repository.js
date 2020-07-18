@@ -3,88 +3,133 @@ import RNBackgroundGeofencing from 'react-native-background-geofencing';
 
 export default class Repository {
   constructor() {
+    this.DB_STORED_USER = '@user';
     this.DB_STORED_GEOFENCE_KEY = '@storedGeofences';
-    this.DB_STORED_GEOFENCE_EVENT_PREFIX = '@storedGeofenceEvent:';
+    this.DB_STORED_GEOFENCE_EVENTS_KEY = '@storedGeofenceEvents';
   }
+
+  getUser = async () => {
+    try {
+      const user = await AsyncStorage.getItem(this.DB_STORED_USER);
+      if (user) {
+        return JSON.parse(user);
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
+  addUser = async user => {
+    try {
+      await AsyncStorage.setItem(this.DB_STORED_USER, JSON.stringify(user));
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   addGeofence = async geofence => {
     try {
-      await RNBackgroundGeofencing.add(geofence);
-      let storedGeofences = await this.getGeofences();
-      if (storedGeofences.length) {
-        storedGeofences = storedGeofences.filter(
-          fence => fence.id !== geofence.id,
-        );
-      }
-      storedGeofences.unshift(geofence);
+      geofence.configuration.createdAt = Date.now();
+      await RNBackgroundGeofencing.add(geofence.configuration);
+      const geofences = (await this.getGeofences()) || [];
+      geofences.unshift(geofence);
       await AsyncStorage.setItem(
         this.DB_STORED_GEOFENCE_KEY,
-        JSON.stringify(storedGeofences),
+        JSON.stringify(geofences),
       );
-      return storedGeofences;
+      console.log(
+        'geofence set and saved with configutation:\n',
+        geofence.configuration,
+      );
+      return geofences;
     } catch (error) {
-      console.log(error);
-      return [];
+      console.log(geofence.configuration);
+      throw error;
     }
   };
 
   getGeofences = async () => {
     try {
-      let storedGeofences = await AsyncStorage.getItem(
-        this.DB_STORED_GEOFENCE_KEY,
+      const geofences = await AsyncStorage.getItem(this.DB_STORED_GEOFENCE_KEY);
+      if (geofences) {
+        return JSON.parse(geofences);
+      } else {
+        return [];
+      }
+    } catch (error) {
+      console.log(error);
+      return [];
+    }
+  };
+
+  addGeofenceEvents = async (events = []) => {
+    try {
+      const existingEvents = await this.getGeofenceEvents();
+      const newEvents = [...events, ...existingEvents];
+      await AsyncStorage.setItem(
+        this.DB_STORED_GEOFENCE_EVENTS_KEY,
+        JSON.stringify(newEvents),
       );
-      storedGeofences = storedGeofences ? JSON.parse(storedGeofences) : [];
-      return storedGeofences;
+      console.log('saved geofence events successfully');
     } catch (error) {
-      console.log(error);
-      return [];
+      throw error;
     }
   };
 
-  getGeofenceEvents = async geofenceId => {
+  getGeofenceEvents = async () => {
     try {
-      const KEY = `${this.DB_STORED_GEOFENCE_EVENT_PREFIX}${geofenceId}`;
-      let storedGeofenceEvents = await AsyncStorage.getItem(KEY);
-      storedGeofenceEvents = storedGeofenceEvents
-        ? JSON.parse(storedGeofenceEvents)
-        : [];
-      return storedGeofenceEvents;
+      let events = await AsyncStorage.getItem(
+        this.DB_STORED_GEOFENCE_EVENTS_KEY,
+      );
+      events = events ? JSON.parse(events) : [];
+      return events;
     } catch (error) {
-      console.log(error);
-      return [];
+      throw error;
     }
   };
 
-  addGeofenceEvent = async (geofenceId, event, data) => {
+  removeGeofenceEvent = async uuid => {
     try {
-      const KEY = `${this.DB_STORED_GEOFENCE_EVENT_PREFIX}${geofenceId}`;
-      let storedGeofenceEvents = await this.getGeofenceEvents(geofenceId);
-      storedGeofenceEvents.unshift({event, data});
-      await AsyncStorage.setItem(KEY, JSON.stringify(storedGeofenceEvents));
-      console.log('Geofence event AsyncSaved: ', geofenceId);
+      let events = await this.getGeofenceEvents();
+      events = events.filter(event => event.uuid !== uuid);
+      await AsyncStorage.setItem(
+        this.DB_STORED_GEOFENCE_EVENTS_KEY,
+        JSON.stringify(events),
+      );
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   };
 
   removeGeofence = async geofenceId => {
     try {
-      const KEY = `${this.DB_STORED_GEOFENCE_EVENT_PREFIX}${geofenceId}`;
-      let storedGeofences = await this.getGeofences();
-      storedGeofences = storedGeofences.filter(
-        fence => fence.id !== geofenceId,
+      const geofenceEvents = await this.getGeofenceEvents();
+      const geofences = await this.getGeofences();
+      const filteredEvents = geofenceEvents.filter(
+        event => event.id !== geofenceId,
+      );
+      const filteredGeofences = geofences.filter(
+        geofence => geofence.configuration.id !== geofenceId,
+      );
+      // await RNBackgroundGeofencing.remove(geofenceId);
+      await AsyncStorage.setItem(
+        this.DB_STORED_GEOFENCE_EVENTS_KEY,
+        JSON.stringify(filteredEvents),
       );
       await AsyncStorage.setItem(
         this.DB_STORED_GEOFENCE_KEY,
-        JSON.stringify(storedGeofences),
+        JSON.stringify(filteredGeofences),
       );
-      console.log('removed Geofence from gen pop');
-      await AsyncStorage.removeItem(KEY);
-      console.log('removed Geofence events');
-      await RNBackgroundGeofencing.remove(geofenceId);
-      console.log('removed listener');
+      console.log('successfully removed geofence');
+      return {
+        geofences: filteredGeofences,
+        events: filteredEvents,
+      };
     } catch (error) {
-      console.log(error);
+      throw error;
     }
   };
 }

@@ -5,6 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
 import com.facebook.react.bridge.ReadableMap;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
@@ -23,6 +29,7 @@ import java.util.List;
 import me.kiano.database.RNGeofenceDB;
 import me.kiano.interfaces.RNGeofenceHandler;
 import me.kiano.receivers.RNGeofenceBroadcastReceiver;
+import me.kiano.services.RNGeofenceRestartWorker;
 
 public class RNGeofence {
     public final String id;
@@ -33,9 +40,7 @@ public class RNGeofence {
     public final long expirationDate;
     public final int notificationResponsiveness;
     public final int loiteringDelay;
-    public final int dwellTransitionType;
     public final boolean registerOnDeviceRestart;
-    public final boolean setInitialTriggers;
     private final Context context;
     private final ArrayList<Geofence> geofenceList = new ArrayList<>();
     private GeofencingClient geofencingClient;
@@ -43,6 +48,42 @@ public class RNGeofence {
     private final String TAG = "RNGeofence";
     private final ArrayList<Object> transitionTypes;
     private final ArrayList<Object> initialTriggerTransitionTypes;
+    private boolean failing = false;
+    private String origin;
+
+    public static void schedulePeriodicWork(Context context) {
+        Constraints constraints = new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build();
+
+        PeriodicWorkRequest periodicWorkRequest =
+                new PeriodicWorkRequest.Builder(RNGeofenceRestartWorker.class, Constant.RN_PERIODIC_WORK_TIME_INTERVAL, Constant.RN_PERIODIC_WORK_TIME_UNIT)
+                        .addTag(Constant.RN_PERIODIC_WORK_TAG)
+                        .setConstraints(constraints)
+                        .build();
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(Constant.RN_PERIODIC_WORK_NAME, ExistingPeriodicWorkPolicy.KEEP, periodicWorkRequest);
+        Log.v("RNGeofence", "Periodic work scheduled");
+    }
+
+    public static void cancelPeriodicWork(Context context) {
+        WorkManager.getInstance(context).cancelUniqueWork(Constant.RN_PERIODIC_WORK_NAME);
+        Log.v("RNGeofence", "Periodic work canceled");
+    }
+
+    public static void setFailing (String geofenceId, boolean failing, Context context) {
+        RNGeofenceDB db = new RNGeofenceDB(context);
+        RNGeofence geofence = db.getGeofence(geofenceId);
+        if (geofence != null && geofence.failing != failing) {
+            geofence.setFailing(failing);
+            geofence.save();
+            // if its failing start worker
+            if (failing) {
+                RNGeofence.schedulePeriodicWork(context);
+            }
+            Log.v("RNGeofence", "Updated failing property of: " + geofence.id + " to: " + failing);
+        }
+    }
 
     public static void remove(Context context,String id) {
         GeofencingClient geofencingClient = LocationServices.getGeofencingClient(context);
@@ -63,18 +104,16 @@ public class RNGeofence {
         expiration = geoFence.getDouble("expiration") > 0 ? (long) geoFence.getDouble("expiration") : Geofence.NEVER_EXPIRE;
         notificationResponsiveness = geoFence.getInt("notificationResponsiveness");
         loiteringDelay = geoFence.getInt("loiteringDelay");
-        dwellTransitionType = geoFence.getBoolean("setDwellTransitionType") ? Geofence.GEOFENCE_TRANSITION_DWELL : 0;
         expirationDate = expiration > Geofence.NEVER_EXPIRE ? System.currentTimeMillis() + expiration : Geofence.NEVER_EXPIRE;
         registerOnDeviceRestart = geoFence.getBoolean("registerOnDeviceRestart");
-        setInitialTriggers = geoFence.getBoolean("setInitialTriggers");
         transitionTypes = geoFence.getArray("transitionTypes").toArrayList();
         initialTriggerTransitionTypes = geoFence.getArray("initialTriggerTransitionTypes").toArrayList();
+        origin = RNGeofenceOrigin.RN;
         setUpRNGeofence();
     }
 
     public RNGeofence (Context context, JSONObject geoFence) throws JSONException {
         this.context = context;
-        Log.v(TAG, geoFence.toString(2));
         id = geoFence.getString("id");
         lat = geoFence.getDouble("lat");
         lng = geoFence.getDouble("lng");
@@ -83,9 +122,7 @@ public class RNGeofence {
         expirationDate = geoFence.getLong("expirationDate");
         notificationResponsiveness = geoFence.getInt("notificationResponsiveness");
         loiteringDelay = geoFence.getInt("loiteringDelay");
-        dwellTransitionType = geoFence.getInt("dwellTransitionType");
         registerOnDeviceRestart = geoFence.getBoolean("registerOnDeviceRestart");
-        setInitialTriggers = geoFence.getBoolean("setInitialTriggers");
         JSONArray transitionTypesJSONArray = geoFence.getJSONArray("transitionTypes");
         transitionTypes = new ArrayList<>();
         for (int i = 0; i < transitionTypesJSONArray.length(); i++) {
@@ -96,6 +133,8 @@ public class RNGeofence {
         for (int i = 0; i < initialTriggerTransitionTypesJSONArray.length(); i++) {
             initialTriggerTransitionTypes.add(initialTriggerTransitionTypesJSONArray.getString(i));
         }
+        failing = geoFence.getBoolean("failing");
+        origin = geoFence.getString("origin");
         setUpRNGeofence();
     }
 
@@ -122,13 +161,17 @@ public class RNGeofence {
         geofenceList.add(geofence);
     }
 
-    private GeofencingRequest getGeofencingRequest() {
-        final int enter = initialTriggerTransitionTypes.contains("enter") ? GeofencingRequest.INITIAL_TRIGGER_ENTER : 0;
-        final int exit = initialTriggerTransitionTypes.contains("exit") ? GeofencingRequest.INITIAL_TRIGGER_EXIT : 0;
-        final int dwell = initialTriggerTransitionTypes.contains("dwell") ? GeofencingRequest.INITIAL_TRIGGER_DWELL : 0;
+    private GeofencingRequest getGeofencingRequest(boolean silently) {
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
-        builder.setInitialTrigger(enter | exit | dwell);
         builder.addGeofences(geofenceList);
+        if (silently) {
+            builder.setInitialTrigger(0);
+            return builder.build();
+        }
+        int enter = initialTriggerTransitionTypes.contains("enter") ? GeofencingRequest.INITIAL_TRIGGER_ENTER : 0;
+        int exit = initialTriggerTransitionTypes.contains("exit") ? GeofencingRequest.INITIAL_TRIGGER_EXIT : 0;
+        int dwell = initialTriggerTransitionTypes.contains("dwell") ? GeofencingRequest.INITIAL_TRIGGER_DWELL : 0;
+        builder.setInitialTrigger(enter | exit | dwell);
         return builder.build();
     }
 
@@ -146,14 +189,15 @@ public class RNGeofence {
         db.saveGeofence(this);
     }
 
-    public void start (final Boolean save, final RNGeofenceHandler handler) {
+    public void start (final Boolean silently, final Boolean skipSave, final RNGeofenceHandler handler) {
         try {
-            geofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent())
+            geofencingClient.addGeofences(getGeofencingRequest(silently), getGeofencePendingIntent())
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void aVoid) {
-                            Log.v(TAG, "Geofence successfully added :)");
-                            if(save) { saveToDB(); }
+                            if (!skipSave) {
+                                saveToDB();
+                            }
                             handler.onSuccess(id);
                         }
                     })
@@ -162,7 +206,6 @@ public class RNGeofence {
                         public void onFailure(Exception e) {
                             Log.v(TAG, e.getMessage());
                             e.printStackTrace();
-                            Log.v(TAG, "Geofence add failed :(");
                             handler.onError(id, e);
                         }
                     });
@@ -181,14 +224,29 @@ public class RNGeofence {
         json.put("expirationDate", expirationDate);
         json.put("notificationResponsiveness", notificationResponsiveness);
         json.put("loiteringDelay", loiteringDelay);
-        json.put("dwellTransitionType", dwellTransitionType);
         json.put("registerOnDeviceRestart", registerOnDeviceRestart);
-        json.put("setInitialTriggers", setInitialTriggers);
         JSONArray transitionTypesJSONArray = new JSONArray(transitionTypes);
         json.put("transitionTypes", transitionTypesJSONArray);
         JSONArray initialTriggerTransitionTypesJSONArray = new JSONArray(initialTriggerTransitionTypes);
         json.put("initialTriggerTransitionTypes", initialTriggerTransitionTypesJSONArray);
-        Log.v( "RNGeofenceJSON",json.toString(2));
+        json.put("failing", failing);
+        json.put("origin", origin);
         return json.toString();
+    }
+
+    public boolean getFailing() {
+        return this.failing;
+    }
+
+    public void setFailing(boolean failing) {
+        this.failing = failing;
+    }
+
+    public void save() {
+        this.saveToDB();
+    }
+
+    public String getOrigin() {
+        return this.origin;
     }
 }

@@ -2,10 +2,7 @@ package me.kiano.services;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.JobIntentService;
@@ -32,18 +29,23 @@ public class RNDeviceRestartJobIntentService extends JobIntentService {
         Log.v(TAG, "RNDeviceRestartJobIntentService work started: " + storedGeofences.size());
 
         for (RNGeofence storedGeofence : storedGeofences) {
-            storedGeofence.start(false, new RNGeofenceHandler() {
-                @Override
-                public void onSuccess(final String geofenceId) {
-                    Log.v(TAG, "Geofence successfully reinitialised: " + geofenceId);
-                }
+            if (storedGeofence.registerOnDeviceRestart) {
+                storedGeofence.start(true, true, new RNGeofenceHandler() {
+                    @Override
+                    public void onSuccess(final String geofenceId) {
+                        Log.v(TAG, "Geofence started successfully after restart");
+                        RNGeofence.setFailing(geofenceId, false, getApplicationContext());
+                    }
 
-                @Override
-                public void onError(final String geofenceId, Exception e) {
-                    Log.v(TAG, "Geofence FAILED reinitialisation: " + geofenceId);
-                    Log.e(TAG, e.getMessage());
-                }
-            });
+                    @Override
+                    public void onError(final String geofenceId, Exception e) {
+                        Log.v(TAG, "Geofence failed to start. We'll get em next time.");
+                        RNGeofence.setFailing(geofenceId, true, getApplicationContext());
+                    }
+                });
+            } else {
+                // TODO: manually expire geofences so that periodic worker doesn't restart them
+            }
         }
     }
 }

@@ -1,6 +1,6 @@
 {
-  "name": "RNBackgroundGeofencing",
-  "version": "0.0.1",
+  "name": "OkHiVaaS",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -12,21 +12,33 @@
     "build:android": "npx react-native bundle --dev false --platform android --entry-file index.js --bundle-output ./android/app/src/main/assets/index.android.bundle --assets-dest ./android/app/src/main/res && cd android/ && ./gradlew assembleDebug && cd.."
   },
   "dependencies": {
+    "@okhi/core": "^1.1.0",
+    "@okhi/okcollect-manager-react-native": "^1.2.2",
     "@react-native-community/async-storage": "^1.9.0",
     "@react-native-community/checkbox": "^0.3.0",
     "@react-native-community/masked-view": "^0.1.7",
+    "@react-native-community/picker": "^1.5.1",
     "@react-navigation/native": "^5.1.4",
     "@react-navigation/stack": "^5.2.9",
+    "@segment/analytics-react-native": "^1.1.1-beta.5",
+    "axios": "^0.19.2",
+    "buffer": "^5.6.0",
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "react": "16.9.0",
     "react-native": "0.61.5",
     "react-native-background-geofencing": "file:../",
+    "react-native-device-info": "^5.5.8",
     "react-native-gesture-handler": "^1.6.1",
+    "react-native-maps": "0.27.1",
     "react-native-permissions": "^2.0.10",
     "react-native-reanimated": "^1.7.1",
     "react-native-safe-area-context": "^0.7.3",
     "react-native-screens": "^2.4.0",
+    "react-native-uuid": "^1.4.9",
+    "react-native-vector-icons": "^6.6.0",
+    "react-native-webview": "9.2.2",
+    "styled-components": "^5.1.0",
     "validator": "^13.0.0"
   },
   "devDependencies": {

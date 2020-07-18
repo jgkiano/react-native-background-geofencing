@@ -1,14 +1,6 @@
 package me.kiano;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.os.Build;
-import android.provider.Settings;
-import android.text.TextUtils;
 import android.util.Log;
-
-import androidx.core.app.ActivityCompat;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -19,8 +11,11 @@ import com.facebook.react.bridge.ReadableMap;
 import org.json.JSONException;
 
 import me.kiano.interfaces.RNGeofenceHandler;
+import me.kiano.interfaces.RNRequestHandler;
 import me.kiano.models.RNGeofence;
-import me.kiano.models.RNGeofenceWebhookConfiguration;
+import me.kiano.models.RNGeofenceWebhook;
+import me.kiano.models.RNGooglePlayService;
+import me.kiano.models.RNLocationService;
 import me.kiano.models.RNNotification;
 
 public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
@@ -29,21 +24,20 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         super(reactContext);
     }
 
-    public static boolean isLocationEnabled(Context context) {
-        int locationMode = 0;
-        String locationProviders;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
-            try {
-                locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
-            } catch (Settings.SettingNotFoundException e) {
-                e.printStackTrace();
-                return false;
+    private void addGeofence(ReadableMap geoFence, final Promise promise) {
+        final RNGeofence rnGeofence = new RNGeofence(getReactApplicationContext(), geoFence);
+        rnGeofence.start(false, false, new RNGeofenceHandler() {
+            @Override
+            public void onSuccess(String geofenceId) {
+                Log.v("RNBGeofencing", "Geofence successfully added");
+                promise.resolve(geofenceId);
             }
-            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
-        } else{
-            locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-            return !TextUtils.isEmpty(locationProviders);
-        }
+            @Override
+            public void onError(String geofenceId, Exception e) {
+                e.printStackTrace();
+                promise.reject("geofence_exception", "Failed to start geofence service for id: " + rnGeofence.id, e);
+            }
+        });
     }
 
     @Override
@@ -52,34 +46,27 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void add(ReadableMap geoFence, final Promise promise) {
+    public void add(ReadableMap geofence, final Promise promise) {
         try {
-            int permission = ActivityCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-
-            if (permission != PackageManager.PERMISSION_GRANTED) {
+            if (!RNLocationService.isLocationPermissionGranted(getReactApplicationContext())) {
                 promise.reject("permission_denied", "Access fine location is not permitted");
                 return;
             }
 
-            if (!isLocationEnabled(getReactApplicationContext())) {
+            if (!RNLocationService.isLocationServicesEnabled(getReactApplicationContext())) {
                 promise.reject("location_services_disabled", "Location services are disabled");
                 return;
             }
 
-            final RNGeofence rnGeofence = new RNGeofence(getReactApplicationContext(), geoFence);
+            if (!RNGooglePlayService.isGooglePlayServicesAvailable(getReactApplicationContext())) {
+                promise.reject("google_play_service_unavailable", "Google play services is unavailable");
+                return;
+            }
 
-            rnGeofence.start(rnGeofence.registerOnDeviceRestart, new RNGeofenceHandler() {
-                @Override
-                public void onSuccess(String geofenceId) {
-                    promise.resolve(geofenceId);
-                }
-                @Override
-                public void onError(String geofenceId, Exception e) {
-                    promise.reject("geofence_exception", "Failed to start geofence service for id: " + rnGeofence.id, e);
-                }
-            });
+            addGeofence(geofence, promise);
         } catch (Exception e) {
-            promise.reject("geofence_exception", "Failed to start geofence service for id: " + geoFence.getString("id"), e);
+            e.printStackTrace();
+            promise.reject("geofence_exception", "Failed to start geofence service for id: " + geofence.getString("id"), e);
         }
     }
 
@@ -91,8 +78,8 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
     @ReactMethod
     public void configureWebhook (ReadableMap configureWebhook, final Promise promise) {
         try {
-            RNGeofenceWebhookConfiguration rnGeofenceWebhookConfiguration = new RNGeofenceWebhookConfiguration(configureWebhook);
-            rnGeofenceWebhookConfiguration.save(getReactApplicationContext());
+            RNGeofenceWebhook rnGeofenceWebhook = new RNGeofenceWebhook(configureWebhook);
+            rnGeofenceWebhook.save(getReactApplicationContext());
             promise.resolve(true);
         } catch (JSONException e) {
             promise.reject("geofence_exception", e.getMessage());
@@ -108,4 +95,65 @@ public class BackgroundGeofencingModule extends ReactContextBaseJavaModule {
         promise.resolve(true);
     }
 
+    @ReactMethod
+    public void openLocationServicesSettings(Promise promise) {
+        RNLocationService.openLocationServicesSettings(getReactApplicationContext());
+        promise.resolve(true);
+    }
+
+    @ReactMethod
+    public void isLocationPermissionGranted(Promise promise) {
+        promise.resolve(RNLocationService.isLocationPermissionGranted(getReactApplicationContext()));
+    }
+
+    @ReactMethod
+    public void isLocationServicesEnabled(Promise promise) {
+        promise.resolve(RNLocationService.isLocationServicesEnabled(getReactApplicationContext()));
+    }
+
+    @ReactMethod
+    public void isGooglePlayServicesAvailable(Promise promise) {
+        promise.resolve(RNGooglePlayService.isGooglePlayServicesAvailable(getReactApplicationContext()));
+    }
+
+    @ReactMethod
+    public void requestEnableLocationServices(final Promise promise) {
+        if (RNLocationService.isLocationServicesEnabled(getReactApplicationContext())) {
+            promise.resolve(true);
+        } else {
+            RNLocationService rnLocationService = new RNLocationService(getCurrentActivity(), getReactApplicationContext());
+            rnLocationService.requestEnableLocationServices(new RNRequestHandler() {
+                @Override
+                public void onSuccess() {
+                    promise.resolve(true);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    promise.resolve(false);
+                    e.printStackTrace();
+                }
+            });
+        }
+    }
+
+    @ReactMethod
+    public void requestEnableGooglePlayServices (final Promise promise) {
+        if (RNGooglePlayService.isGooglePlayServicesAvailable(getReactApplicationContext())) {
+            promise.resolve(true);
+        } else {
+            RNGooglePlayService rnGooglePlayService = new RNGooglePlayService(getCurrentActivity(), getReactApplicationContext());
+            rnGooglePlayService.requestEnableGooglePlayServices(new RNRequestHandler() {
+                @Override
+                public void onSuccess() {
+                    promise.resolve(true);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    promise.resolve(false);
+                }
+            });
+        }
+    }
 }

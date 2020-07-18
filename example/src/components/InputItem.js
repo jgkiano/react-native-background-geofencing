@@ -6,7 +6,13 @@ import {TextInput} from 'react-native-gesture-handler';
 export default function InputItem(props) {
   return (
     <View style={{flex: 1}}>
-      <Text style={{fontSize: 16, fontWeight: 'bold', marginBottom: 5}}>
+      <Text
+        style={{
+          fontSize: 14,
+          fontWeight: 'bold',
+          marginBottom: 5,
+          opacity: 0.9,
+        }}>
         {props.label}
       </Text>
       <TextInput
@@ -14,8 +20,8 @@ export default function InputItem(props) {
           borderWidth: 2,
           borderRadius: 8,
           borderColor: '#E0E0E0',
-          height: 46,
           padding: 15,
+          paddingVertical: 8,
           fontSize: 16,
         }}
         autoCapitalize="none"

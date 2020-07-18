@@ -1,27 +1,19 @@
 import {AppRegistry} from 'react-native';
-import {
-  configureJSTask,
-  configureWebhook,
-} from 'react-native-background-geofencing';
+import RNBackgroundGeofencing from 'react-native-background-geofencing';
+import {initSegment} from './src/services/Segment';
 import App from './App';
 import {name as appName} from './app.json';
 import task from './src/services/task';
-import secrets from './secrets.json';
+// import secrets from './secrets.json';
 
-configureJSTask({
-  task,
-  notification: {
-    title: 'Geofence warming up',
-    text: 'Registering geofences...',
-  },
-});
+initSegment();
 
-configureWebhook({
-  url: secrets.webhook,
-  meta: {
-    lib: {
-      name: 'foo',
-      version: 'bar',
+RNBackgroundGeofencing.configure({
+  jsTask: {
+    task,
+    notification: {
+      title: 'Work work',
+      text: 'Get that money',
     },
   },
 });
