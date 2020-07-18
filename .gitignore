@@ -45,3 +45,5 @@ index.android.bundle
 
 *.bundle
 example/src/services/OkHiCore.js
+
+dist/
