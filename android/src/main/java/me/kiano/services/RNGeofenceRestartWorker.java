@@ -54,6 +54,7 @@ public class RNGeofenceRestartWorker extends Worker {
 
         // return true if empty
         if (failingGeofences.isEmpty()) {
+            Log.v(TAG, "No failed geofences registered");
             return true;
         }
 
